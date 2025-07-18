@@ -84,4 +84,4 @@ Payments
 
 PayPal SDK
 
-link to the short showcase :- [![Watch the video](https://img.youtube.com/vi//maxresdefault.jpg)](https://youtube.com/shorts/EEX6L1K_Ybc)
+link to the short showcase :- [![Watch the video](https://img.youtube.com/vi/EEX6L1K_Ybc/maxresdefault.jpg)](https://youtube.com/shorts/EEX6L1K_Ybc)
