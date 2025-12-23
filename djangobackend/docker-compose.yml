@@ -25,10 +25,8 @@ services:
     image: postgres:15
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_USER=postgresuser
-      - POSTGRES_PASSWORD=postgrespassword
-      - POSTGRES_DB=djangobnb
+    env_file:
+      - ./.env.dev
 
 volumes:
   postgres_data:
