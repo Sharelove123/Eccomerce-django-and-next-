@@ -1,236 +1,262 @@
 'use client';
-import { getUserId } from "@/app/lib/actions";
 import apiService from "@/app/services/apiService";
 import { Address } from "@/app/utils/types";
-import { Delete, Edit } from "@mui/icons-material";
-import { Alert, AlertTitle, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Icon, IconButton, TextField, Typography } from "@mui/material";
-import { Bungee, Lilita_One } from "next/font/google";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import React from "react";
 import SimpleSnackbar from "../snackbar";
+import { JetBrains_Mono } from "next/font/google";
 
-const bunjee = Bungee({ weight: '400', subsets: ['latin'] });
-const lilita_One = Lilita_One({ weight: '400', subsets: ['latin'] });
-
+const mono = JetBrains_Mono({ subsets: ['latin'] });
 
 interface AddressChoiceProps {
-    selectedAddress: number | null;
-    setSelectedAddress: (id: number) => void;
+    onAddressSelect: (id: number) => void;
 }
 
-const AddressChoice: React.FC<AddressChoiceProps> = ({ selectedAddress, setSelectedAddress }) => {
-    const [open, setOpen] = React.useState(false);
+const AddressChoice: React.FC<AddressChoiceProps> = ({ onAddressSelect }) => {
+    const [addresses, setAddresses] = useState<Address[]>([]);
+    const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Form States
     const [apartmentNumber, setApartmentNumber] = useState('');
     const [streetAddress, setStreetAddress] = useState('');
     const [city, setCity] = useState('');
     const [state, setState] = useState('');
     const [postalCode, setPostalCode] = useState('');
     const [country, setCountry] = useState('');
-    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-    const [showAddressDeletionAlert, setShowAddressDeletionAlert] = useState(false);
-    const [addresses, setAddresses] = useState<Address[]>([]);
 
+    const [openSnackbar, setOpenSnackbar] = React.useState(false);
+    const [msg, setMsg] = useState('');
+
+    const handleSnackbarClick = () => {
+        setOpenSnackbar(true);
+    };
 
     const fetchAddresses = async () => {
         try {
-            const result = await apiService.get('/api/cart/addresses/');
-            setAddresses(result);
+            const response = await apiService.get('/api/cart/addresses/');
+            const addressList = Array.isArray(response) ? response : response.results || [];
+
+            setAddresses(addressList);
+
+            // Check for saved selection
+            const savedAddressId = parseInt(localStorage.getItem('selectedAddress') || '0');
+            if (savedAddressId && addressList.some((addr: Address) => addr.id === savedAddressId)) {
+                setSelectedAddressId(savedAddressId);
+                onAddressSelect(savedAddressId);
+            }
         } catch (error) {
-            console.log('Error fetching addresses:', error);
+            console.error('Error fetching addresses:', error);
+            setAddresses([]);
         }
     };
-
-    const deleteAddress = async (id: Number) => {
-        try {
-            const result = await apiService.delete(`/api/cart/addresses/${id}/`);
-            setShowAddressDeletionAlert(true);
-        } catch (error) {
-            console.log('Error fetching addresses:', error);
-        }
-    };
-
 
     useEffect(() => {
         fetchAddresses();
-        const selectedAddress = parseInt(localStorage.getItem('selectedAddress') || '0');
-        setSelectedAddress(selectedAddress);
     }, []);
 
-    useEffect(() => {
-        if (showSuccessAlert) {
-            fetchAddresses();
-            const timer = setTimeout(() => {
-                setShowSuccessAlert(false);
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [showSuccessAlert]);
-
-    useEffect(() => {
-        if (showAddressDeletionAlert) {
-            fetchAddresses();
-            const timer = setTimeout(() => {
-                setShowAddressDeletionAlert(false);
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [showAddressDeletionAlert]);
-
-
-    const handleClickOpen = () => {
-        setOpen(true);
+    const handleSelect = (id: number) => {
+        setSelectedAddressId(id);
+        onAddressSelect(id);
+        localStorage.setItem('selectedAddress', id.toString());
     };
 
-    const handleClose = () => {
-        setOpen(false);
-    };
-
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleAddAddress = async (e: React.FormEvent) => {
         e.preventDefault();
-        const userId = await getUserId();
-        console.log(userId);
 
-        const formdata = new FormData();
-        if (userId) {
-            formdata.append('user', userId);
-        } else {
-            console.error('User ID is null');
-        }
-        formdata.append('country', country);
-        formdata.append('state', state);
-        formdata.append('city', city);
-        formdata.append('street_name', streetAddress);
-        formdata.append('apartment_number', apartmentNumber);
-        formdata.append('postal_code', postalCode);
-        formdata.append('country', country);
+        const formData = new FormData();
+        formData.append('apartment_number', apartmentNumber);
+        formData.append('street_name', streetAddress);
+        formData.append('city', city);
+        formData.append('state', state);
+        formData.append('postal_code', postalCode);
+        formData.append('country', country);
 
         try {
-            const response = await apiService.post('/api/cart/addresses/', formdata, { headers: { 'Content-Type': 'multipart/form-data' } });
-            console.log('Address created:', response);
-            setShowSuccessAlert(true);
-            // Add any additional logic here, such as updating the UI or state
+            const response = await apiService.post('/api/cart/addresses/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+            if (response && !response.error) {
+                setMsg("ADDRESS RECORDED");
+                handleSnackbarClick();
+                setIsModalOpen(false);
+                fetchAddresses(); // Refresh list
+
+                // Clear form
+                setApartmentNumber('');
+                setStreetAddress('');
+                setCity('');
+                setState('');
+                setPostalCode('');
+                setCountry('');
+            } else {
+                setMsg(response.error || "RECORDING FAILED");
+                handleSnackbarClick();
+            }
         } catch (error) {
-            console.log('Error creating address:', error);
+            console.error('Error adding address:', error);
+            setMsg("SYSTEM ERROR");
+            handleSnackbarClick();
         }
-        // Add your form submission logic here
-        handleClose();
     };
 
     return (
-        <div className="flex flex-col w-5/6 mt-1">
-            <div className='flex flex-row space-x-6 justify-normal'>
-                <div className='flex flex-row space-x-6'>
-                    <Typography className={`${bunjee.className} border-2 rounded-lg w-8 flex justify-center items-center `}>2</Typography>
-                    <Typography className={`${lilita_One.className} flex justify-center items-center `}>Select Shipping Address</Typography>
-                </div>
-                <Button variant="text" color="warning" startIcon={<Edit />} onClick={handleClickOpen}>
-                    Add Address
-                </Button>
-                <Dialog
-                    open={open}
-                    onClose={handleClose}
-                    PaperProps={{
-                        component: 'form',
-                        onSubmit: handleSubmit
-                    }}
+        <div className="w-full">
+            <div className="flex items-end justify-between mb-8 border-b-2 border-dashed border-gray-300 pb-2">
+                <h3 className="text-xl font-bold uppercase tracking-widest text-black">Available Locations</h3>
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="text-sm font-bold uppercase tracking-wider text-black hover:bg-black hover:text-white px-3 py-1 border border-black transition-colors"
                 >
-                    <DialogTitle>Add Address</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            Please enter your shipping address below. This information will be used to deliver your Cart.
-                        </DialogContentText>
-                        <div className="flex flex-col mt-6 space-y-6">
-
-                            <TextField
-                                label="Apartment Number"
-                                name="apartment_number"
-                                value={apartmentNumber}
-                                onChange={(e) => setApartmentNumber(e.target.value)}
-                                fullWidth
-                            />
-                            <TextField
-                                label="Street Address"
-                                name="street_address"
-                                value={streetAddress}
-                                onChange={(e) => setStreetAddress(e.target.value)}
-                                fullWidth
-                            />
-                            <TextField
-                                label="City"
-                                name="city"
-                                value={city}
-                                onChange={(e) => setCity(e.target.value)}
-                                fullWidth
-                            />
-                            <TextField
-                                label="State"
-                                name="state"
-                                value={state}
-                                onChange={(e) => setState(e.target.value)}
-                                fullWidth
-                            />
-                            <TextField
-                                label="Postal Code"
-                                name="postal_code"
-                                value={postalCode}
-                                onChange={(e) => setPostalCode(e.target.value)}
-                                fullWidth
-                            />
-                            <TextField
-                                label="Country"
-                                name="country"
-                                value={country}
-                                onChange={(e) => setCountry(e.target.value)}
-                                fullWidth
-                            />
-                        </div>
-                    </DialogContent>
-                    <DialogActions sx={{ justifyItems: 'center', justifyContent: 'space-around' }}>
-                        <Button onClick={handleClose}>Cancel</Button>
-                        <Button type="submit">Add</Button>
-                    </DialogActions>
-                </Dialog>
+                    + New Entry
+                </button>
             </div>
 
-            {showSuccessAlert && (
-                <Alert severity="success">
-                    <AlertTitle>Success</AlertTitle>
-                    Address created successfully!!!!
-                </Alert>
-            )}
-
-            {showAddressDeletionAlert && (
-                <Alert severity="success">
-                    <AlertTitle>Success</AlertTitle>
-                    Address deleted successfully!!!!
-                </Alert>
-            )}
-
-            <div className="flex  items-center justify-center md:flex flex-wrap space-x-2 space-y-2">
-
-
-                {addresses.map((address, index) => (
+            {/* Address List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {addresses.map((address) => (
                     <div
-                        key={index}
-                        className={`h-fit w-[220px] cursor-pointer rounded-2xl p-2 ${selectedAddress === address.id ? 'border-4 border-black' : 'opacity-0.1'}`} onClick={()=>{
-                            localStorage.setItem('selectedAddress',String(address.id));
-                            setSelectedAddress(address.id);
-                        }}
+                        key={address.id}
+                        onClick={() => handleSelect(address.id)}
+                        className={`cursor-pointer p-6 border-2 transition-all relative group ${selectedAddressId === address.id
+                            ? 'border-black bg-black text-white shadow-[4px_4px_0px_0px_rgba(100,100,100,1)]'
+                            : 'border-black bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                            }`}
                     >
-                        <center>
-                            <p className="break-words text-center">
-                                {address.apartment_number}, {address.street_name}, {address.city}, {address.state}, {address.postal_code}, {address.country}
+                        {selectedAddressId === address.id && (
+                            <div className="absolute top-0 right-0 bg-white text-black px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest">
+                                Selected
+                            </div>
+                        )}
+
+                        <div className={`space-y-1 font-mono text-sm ${selectedAddressId === address.id ? 'text-gray-300' : 'text-gray-600'}`}>
+                            <p className={`font-bold uppercase tracking-wider text-base mb-2 ${selectedAddressId === address.id ? 'text-white' : 'text-black'}`}>
+                                {address.apartment_number} {address.street_name}
                             </p>
-                        </center>
-                        <center>
-                            <IconButton aria-label="delete" color="warning" onClick={() => deleteAddress(address.id)}>
-                                <Delete />
-                            </IconButton>
-                        </center>
+                            <p>
+                                {address.city}, {address.state}
+                            </p>
+                            <p>
+                                {address.postal_code}
+                            </p>
+                            <p className="uppercase text-xs font-bold pt-2 tracking-widest opacity-70">
+                                {address.country}
+                            </p>
+                        </div>
                     </div>
                 ))}
+
+                {addresses.length === 0 && (
+                    <div className="col-span-full py-12 text-center border-2 border-dashed border-gray-300 text-gray-400 font-mono text-sm uppercase">
+                        // No locations found in database
+                    </div>
+                )}
             </div>
+
+            {/* Modal - Brutalist */}
+            {isModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-grayscale">
+                    <div className="bg-white w-full max-w-lg border-2 border-black shadow-[16px_16px_0px_0px_rgba(50,50,50,1)] animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b-2 border-black flex justify-between items-center bg-gray-50">
+                            <h2 className={`text-2xl font-black uppercase tracking-tight ${mono.className}`}>New Entry</h2>
+                            <button
+                                onClick={() => setIsModalOpen(false)}
+                                className="text-black hover:bg-black hover:text-white border border-black w-8 h-8 flex items-center justify-center font-bold"
+                            >
+                                X
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleAddAddress} className="p-8 space-y-6">
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Apt / Unit</label>
+                                        <input
+                                            type="text"
+                                            value={apartmentNumber}
+                                            onChange={(e) => setApartmentNumber(e.target.value)}
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none"
+                                            placeholder="101"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Street</label>
+                                        <input
+                                            type="text"
+                                            value={streetAddress}
+                                            onChange={(e) => setStreetAddress(e.target.value)}
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none"
+                                            placeholder="Main St"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold uppercase tracking-widest text-gray-500">City</label>
+                                        <input
+                                            type="text"
+                                            value={city}
+                                            onChange={(e) => setCity(e.target.value)}
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none"
+                                            placeholder="NY"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold uppercase tracking-widest text-gray-500">State</label>
+                                        <input
+                                            type="text"
+                                            value={state}
+                                            onChange={(e) => setState(e.target.value)}
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none"
+                                            placeholder="NY"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Zip Code</label>
+                                        <input
+                                            type="text"
+                                            value={postalCode}
+                                            onChange={(e) => setPostalCode(e.target.value)}
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none"
+                                            placeholder="10001"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Country</label>
+                                        <input
+                                            type="text"
+                                            value={country}
+                                            onChange={(e) => setCountry(e.target.value)}
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none"
+                                            placeholder="USA"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                className="w-full py-4 bg-black text-white font-black uppercase tracking-widest hover:bg-white hover:text-black border-2 border-black transition-all shadow-none hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                            >
+                                Confirm_Entry
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            <SimpleSnackbar open={openSnackbar} setOpen={setOpenSnackbar} msg={msg} />
         </div>
-    )
+    );
 }
 
 export default AddressChoice;

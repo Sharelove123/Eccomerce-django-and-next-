@@ -3,15 +3,18 @@ import { useRouter } from 'next/navigation';
 import { handleLogin } from '../lib/actions';
 import apiService from '../services/apiService';
 import { useState } from 'react';
+import Link from 'next/link';
 
 const SignIn = () => {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState<string[]>([]);
+    const [loading, setLoading] = useState(false);
 
     const submitLogin = async (event: React.FormEvent) => {
         event.preventDefault();
+        setLoading(true);
         const formData = {
             email: email,
             password: password
@@ -19,65 +22,96 @@ const SignIn = () => {
 
         const response = await apiService.postWithoutToken('/api/auth/login/', JSON.stringify(formData))
 
+        setLoading(false);
+
         if (response.access) {
             handleLogin(response.user.pk, response.access, response.refresh);
-
-
-
             router.replace('/');
         } else {
-            setErrors(response.non_field_errors);
+            setErrors(response.non_field_errors || ["Login failed. Please check your credentials."]);
         }
     }
 
     return (
-        <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-            <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-                <img className="mx-auto h-10 w-auto" src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company" />
-                <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">Sign in to your account</h2>
-            </div>
+        <div className="flex min-h-screen flex-col justify-center px-6 py-12 lg:px-8 bg-background relative overflow-hidden">
+            {/* Background Blob */}
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/20 blur-[100px] pointer-events-none" />
 
-            <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-                <form className="space-y-6" action="#" method="POST">
-                    <div>
-                        <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">Email address</label>
-                        <div className="mt-2">
-                            <input onChange={(e) => setEmail(e.target.value)} type="email" name="email" id="email" autoComplete={"email"} required className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
-                        </div>
-                    </div>
+            <div className="sm:mx-auto sm:w-full sm:max-w-sm relative z-10">
+                <div className="text-center mb-10">
+                    <span className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                        ECCOMERCE
+                    </span>
+                    <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-foreground">
+                        Welcome Back
+                    </h2>
+                    <p className="mt-2 text-sm text-muted-foreground">Sign in to your account</p>
+                </div>
 
-                    <div>
-                        <div className="flex items-center justify-between">
-                            <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900">Password</label>
-                            <div className="text-sm">
-                                <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">Forgot password?</a>
+                <div className="bg-card/50 backdrop-blur-xl border border-white/20 shadow-xl rounded-2xl p-8">
+                    <form className="space-y-6" onSubmit={submitLogin}>
+                        <div>
+                            <label htmlFor="email" className="block text-sm font-medium leading-6 text-foreground">Email address</label>
+                            <div className="mt-2">
+                                <input
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    type="email"
+                                    name="email"
+                                    id="email"
+                                    autoComplete="email"
+                                    required
+                                    className="block w-full rounded-lg border-0 bg-muted/50 py-2.5 px-3 text-foreground shadow-sm ring-1 ring-inset ring-border placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 transition-all"
+                                />
                             </div>
                         </div>
-                        <div className="mt-2">
-                            <input onChange={(e) => setPassword(e.target.value)} type="password" name="password" id="password" autoComplete="current-password" required className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
-                        </div>
-                    </div>
 
-                    {errors.map((error, index) => {
-                        return (
-                            <div
-                                key={`error_${index}`}
-                                className="p-5 bg-airbnb text-white rounded-xl opacity-80"
+                        <div>
+                            <div className="flex items-center justify-between">
+                                <label htmlFor="password" className="block text-sm font-medium leading-6 text-foreground">Password</label>
+                                <div className="text-sm">
+                                    <a href="#" className="font-semibold text-primary hover:text-primary/80 transition-colors">Forgot password?</a>
+                                </div>
+                            </div>
+                            <div className="mt-2">
+                                <input
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    type="password"
+                                    name="password"
+                                    id="password"
+                                    autoComplete="current-password"
+                                    required
+                                    className="block w-full rounded-lg border-0 bg-muted/50 py-2.5 px-3 text-foreground shadow-sm ring-1 ring-inset ring-border placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 transition-all"
+                                />
+                            </div>
+                        </div>
+
+                        {errors.length > 0 && (
+                            <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
+                                {errors.map((error, index) => (
+                                    <p key={index}>{error}</p>
+                                ))}
+                            </div>
+                        )}
+
+                        <div>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="flex w-full justify-center rounded-lg bg-primary px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-lg shadow-primary/25 hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                {error}
-                            </div>
-                        )
-                    })}
+                                {loading ? "Signing in..." : "Sign in"}
+                            </button>
+                        </div>
+                    </form>
 
-                    <div>
-                        <button type="submit" onClick={(e) => submitLogin(e)} className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Sign in</button>
-                    </div>
-                </form>
-
-                <p className="mt-10 text-center text-sm/6 text-gray-500">
-                    Not a member?
-                    <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500" onClick={() => { router.push('/signup') }}>Sign Up</a>
-                </p>
+                    <p className="mt-10 text-center text-sm text-muted-foreground">
+                        Not a member?{' '}
+                        <button onClick={() => router.push('/signup')} className="font-semibold leading-6 text-primary hover:text-primary/80 transition-colors">
+                            Sign Up
+                        </button>
+                    </p>
+                </div>
             </div>
         </div>
     )

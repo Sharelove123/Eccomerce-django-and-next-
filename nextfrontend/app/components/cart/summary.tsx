@@ -1,21 +1,17 @@
 'use client';
 
 import { Address, CartItem } from "@/app/utils/types";
-import { SouthAmericaOutlined } from "@mui/icons-material";
-import { Accordion, accordionClasses, AccordionDetails, accordionDetailsClasses, AccordionSlots, AccordionSummary, Button, Fade, Radio, Typography } from "@mui/material"
-import { Bungee, Lilita_One } from "next/font/google";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useEffect, useState } from "react";
-import ProductCard from "./productCard";
 import React from "react";
 import apiService from "@/app/services/apiService";
 import { useRouter } from "next/navigation";
 import { getUserId } from "@/app/lib/actions";
 import SimpleSnackbar from "../snackbar";
 import PayPalButton from "../payment/paypalbutton";
+import { JetBrains_Mono, Bungee } from "next/font/google";
 
-const bunjee = Bungee({ weight: '400', subsets: ['latin'] });
-const lilita_One = Lilita_One({ weight: '400', subsets: ['latin'] });
+const mono = JetBrains_Mono({ subsets: ['latin'] });
+const bungee = Bungee({ weight: '400', subsets: ['latin'] });
 
 interface totalPriceProp {
     totalPrice: number,
@@ -23,54 +19,39 @@ interface totalPriceProp {
     setSelectedAddress: (id: number) => void;
     onCartChange: () => void;
 }
-const Summary: React.FC<totalPriceProp> = ({ totalPrice, selectedAddress, setSelectedAddress,onCartChange }) => {
-    const [expanded, setExpanded] = React.useState(false);
-    const handleExpansion = () => {
-        setExpanded((prevExpanded) => !prevExpanded);
-    };
-    const [expanded1, setExpanded1] = React.useState(false);
-    const handleExpansion1 = () => {
-        setExpanded1((prevExpanded) => !prevExpanded);
-    };
+
+const Summary: React.FC<totalPriceProp> = ({ totalPrice, selectedAddress, setSelectedAddress, onCartChange }) => {
     const [apartmentNumber, setApartmentNumber] = useState('');
     const [streetAddress, setStreetAddress] = useState('');
     const [city, setCity] = useState('');
     const [state, setState] = useState('');
     const [postalCode, setPostalCode] = useState('');
     const [country, setCountry] = useState('');
-    const [msg, setMsg] = useState('order created sucessfully');
+    const [msg, setMsg] = useState('ORDER PROCESSED');
     const [open, setOpen] = React.useState(false);
     const [orderId, setOrderId] = React.useState(36);
+    const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        handleClick();
-    })
-
-    const handleClick = () => {
-        setOpen(true);
-    };
     const router = useRouter();
 
     const [errors, setErrors]: [string[], React.Dispatch<React.SetStateAction<string[]>>] = useState<string[]>([]);
 
-    const logFormData = (formData: FormData) => {
-        for (let pair of formData.entries()) {
-            console.log(`${pair[0]}: ${pair[1]}`);
-        }
+    const handleClick = () => {
+        setOpen(true);
     };
 
     const submitOrder = async (details: any) => {
         const formData = new FormData();
         const userId = await getUserId();
         if (!userId) {
-            setErrors((prevErrors) => [...prevErrors, 'User ID is null']);
+            setErrors((prevErrors) => [...prevErrors, 'USER ID REQUIRED']);
             return;
         }
 
         formData.append('user', userId.toString());
 
         if (!selectedAddress) {
-            setErrors((prevErrors) => [...prevErrors, 'Select Shipping Address']);
+            setErrors((prevErrors) => [...prevErrors, 'ADDRESS REQUIRED']);
             return;
         }
 
@@ -86,44 +67,49 @@ const Summary: React.FC<totalPriceProp> = ({ totalPrice, selectedAddress, setSel
         formData.append('order_items', JSON.stringify(orderItems));
 
         try {
+            setLoading(true);
             const response = await apiService.post('/api/cart/createorder/', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            console.log(response.message);
             if (response.status === 'success') {
                 localStorage.removeItem('cart');
-                setMsg(response.message);
+                setMsg(response.message.toUpperCase());
                 handleClick();
                 onCartChange();
                 setOrderId(response.order_id);
             }
             if (response.status === 'failed') {
-                setMsg(response.message);
+                setMsg(response.message.toUpperCase());
                 handleClick();
                 router.refresh();
             }
         } catch (error) {
             console.error('Error creating order:', error);
+            setMsg('SYSTEM ERROR: ORDER FAILED');
+            handleClick();
+        } finally {
+            setLoading(false);
         }
     };
 
     const handlePaymentSuccess = async (details: any) => {
-        console.log('Payment successful:', details);
         await submitOrder(details);
-        setMsg('Payment Successful');
+        setMsg('PAYMENT VERIFIED');
         localStorage.removeItem('cart');
         handleClick();
         onCartChange();
     };
 
-
-
     const getAddressDetail = async (addressId: number) => {
-        if (!isNaN(addressId)) {
-            const result = await apiService.get(`/api/cart/addresses/${addressId}/`);
-            return result;
+        if (!isNaN(addressId) && addressId !== 0) {
+            try {
+                const result = await apiService.get(`/api/cart/addresses/${addressId}/`);
+                return result;
+            } catch (e) {
+                return null;
+            }
         } else {
             return 0
         }
@@ -131,170 +117,111 @@ const Summary: React.FC<totalPriceProp> = ({ totalPrice, selectedAddress, setSel
 
     useEffect(() => {
         const fetchAddressDetail = async () => {
-            const addressId = parseInt(localStorage.getItem('selectedAddress') || 'null');
-            const addressDetail: Address = await getAddressDetail(addressId);
-            setApartmentNumber(addressDetail.apartment_number);
-            setStreetAddress(addressDetail.street_name);
-            setCity(addressDetail.city);
-            setState(addressDetail.state);
-            setPostalCode(addressDetail.postal_code);
-            setCountry(addressDetail.country);
+            const addressId = parseInt(localStorage.getItem('selectedAddress') || '0');
+            if (addressId) {
+                const addressDetail: Address = await getAddressDetail(addressId);
+                if (addressDetail) {
+                    setApartmentNumber(addressDetail.apartment_number);
+                    setStreetAddress(addressDetail.street_name);
+                    setCity(addressDetail.city);
+                    setState(addressDetail.state);
+                    setPostalCode(addressDetail.postal_code);
+                    setCountry(addressDetail.country);
+                }
+            }
         };
         fetchAddressDetail();
     }, [selectedAddress])
 
-
-
     return (
-        
-        <div className="flex flex-col justify-start shadow-md rounded-md bg-white md:w-1/6">
-            {errors.length > 0 && (
-                <div>
-                    {errors.map((error, index) => (
-                        <p key={index} style={{ color: 'red' }}>{error}</p>
-                    ))}
-                </div>
-            )}
-            <Typography className={`${bunjee.className} text-black`}>Cart Summary</Typography>
-            <div className="flex flex-row items-center justify-around">
-                <Typography className={`${lilita_One.className} text-black`}>Total</Typography>
-                <Typography className={`${lilita_One.className} text-black`}>{totalPrice}</Typography>
-            </div>
-            <Accordion
-                expanded={expanded}
-                onChange={handleExpansion}
-                slots={{ transition: Fade as AccordionSlots['transition'] }}
-                slotProps={{ transition: { timeout: 400 } }}
-                sx={[
-                    expanded
-                        ? {
-                            [`& .${accordionClasses.region}`]: {
-                                height: 'auto',
-                            },
-                            [`& .${accordionDetailsClasses.root}`]: {
-                                display: 'block',
-                            },
-                        }
-                        : {
-                            [`& .${accordionClasses.region}`]: {
-                                height: 0,
-                            },
-                            [`& .${accordionDetailsClasses.root}`]: {
-                                display: 'none',
-                            },
-                        },
-                ]}
-            >
-                <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1-content"
-                    id="panel1-header"
-                    style={{ minHeight: '6px' }}
-                    className='bg-blue-100 mt-6'
-                >
-                    <div className='flex row bg-transparent space-x-1 h-[5px] justify-self-start justify-start items-center'>
-                        <Typography className={lilita_One.className}>Shipping Address</Typography>
-                    </div>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <div className="flex flex-col">
-                        <div className="flex flex-row justify-between items-center">
-                            <Typography>
-                                ApartmentNumber:
-                            </Typography>
-                            <Typography>
-                                {apartmentNumber}
-                            </Typography>
-                        </div>
-                        <div className="flex flex-row justify-between items-center">
-                            <Typography>
-                                Street Name:
-                            </Typography>
-                            <Typography>
-                                {streetAddress}
-                            </Typography>
-                        </div>
-                        <div className="flex flex-row justify-between items-center">
-                            <Typography>
-                                City:
-                            </Typography>
-                            <Typography>
-                                {city}
-                            </Typography>
-                        </div>
-                        <div className="flex flex-row justify-between items-center">
-                            <Typography>
-                                state:
-                            </Typography>
-                            <Typography>
-                                {state}
-                            </Typography>
-                        </div>
-                        <div className="flex flex-row justify-between items-center">
-                            <Typography>
-                                postal code:
-                            </Typography>
-                            <Typography>
-                                {postalCode}
-                            </Typography>
-                        </div>
-                        <div className="flex flex-row justify-between items-center">
-                            <Typography>
-                                country:
-                            </Typography>
-                            <Typography>
-                                {country}
-                            </Typography>
-                        </div>
-                    </div>
-                </AccordionDetails>
-            </Accordion>
+        <div className="w-full lg:w-2/5 flex flex-col gap-6 sticky top-24">
+            <div className="bg-white border-2 border-black p-0 relative brutal-shadow">
 
-            <Accordion
-                expanded={expanded1}
-                onChange={handleExpansion1}
-                slots={{ transition: Fade as AccordionSlots['transition'] }}
-                slotProps={{ transition: { timeout: 400 } }}
-                sx={[
-                    expanded1
-                        ? {
-                            [`& .${accordionClasses.region}`]: {
-                                height: 'auto',
-                            },
-                            [`& .${accordionDetailsClasses.root}`]: {
-                                display: 'block',
-                            },
-                        }
-                        : {
-                            [`& .${accordionClasses.region}`]: {
-                                height: 0,
-                            },
-                            [`& .${accordionDetailsClasses.root}`]: {
-                                display: 'none',
-                            },
-                        },
-                ]}
-            >
-                <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1-content"
-                    id="panel1-header"
-                    style={{ minHeight: '6px' }}
-                    className='bg-blue-100 mt-6'
-                >
-                    <div className='flex row bg-transparent space-x-1 h-[5px] justify-self-start justify-start items-center'>
-                        <Typography className={lilita_One.className}>Payment Method</Typography>
-                    </div>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <div className="flex flex-col">
-                        <div>
-                            <PayPalButton totalPrice={totalPrice} onSuccess={handlePaymentSuccess}/>
+                {/* Header */}
+                <div className="bg-black p-4">
+                    <h3 className={`text-xl text-white uppercase tracking-widest ${mono.className}`}>
+                        Total_Calculations
+                    </h3>
+                </div>
+
+                <div className="p-6 md:p-8 space-y-6">
+                    {errors.length > 0 && (
+                        <div className="p-4 border-2 border-red-600 bg-red-50 text-red-600 font-bold uppercase tracking-wide decoration-slice">
+                            {errors.map((error, index) => (
+                                <p key={index} className="flex items-center gap-2">
+                                    <span>[!]</span> {error}
+                                </p>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Cost Breakdown */}
+                    <div className={`space-y-4 ${mono.className}`}>
+                        <div className="flex justify-between items-center text-sm uppercase tracking-wider">
+                            <span className="text-gray-500">Subtotal</span>
+                            <span className="font-bold text-black">${totalPrice.toFixed(2)}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center text-sm uppercase tracking-wider">
+                            <span className="text-gray-500">Shipping</span>
+                            <span className="bg-black text-white px-2 py-0.5 text-xs font-bold">FREE</span>
+                        </div>
+
+                        <div className="flex justify-between items-center text-sm uppercase tracking-wider">
+                            <span className="text-gray-500">Tax</span>
+                            <span className="font-bold text-black">$0.00</span>
                         </div>
                     </div>
-                </AccordionDetails>
-            </Accordion>
-            <SimpleSnackbar open={open} setOpen={setOpen} msg = {msg}/>
+
+                    {/* Divider */}
+                    <div className="border-b-2 border-dashed border-gray-300 my-6" />
+
+                    {/* Total */}
+                    <div className="flex justify-between items-end">
+                        <span className="text-sm font-bold uppercase tracking-widest text-black">Total Due</span>
+                        <span className={`text-4xl font-black text-black tracking-tight ${mono.className}`}>
+                            ${totalPrice.toFixed(2)}
+                        </span>
+                    </div>
+
+                    {/* Address Section */}
+                    <div className="py-6 border-t-2 border-black mt-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h4 className="text-xs font-bold uppercase tracking-widest bg-gray-100 px-2 py-1 inline-block">
+                                Destination
+                            </h4>
+                            {city && (
+                                <button className="text-xs font-bold underline hover:bg-black hover:text-white px-1 transition-colors">
+                                    CHANGE
+                                </button>
+                            )}
+                        </div>
+
+                        {city ? (
+                            <div className="font-mono text-sm leading-relaxed text-gray-700 bg-gray-50 p-4 border border-gray-200">
+                                <p className="font-bold text-black">{apartmentNumber} {streetAddress}</p>
+                                <p>{city}, {state} {postalCode}</p>
+                                <p className="uppercase">{country}</p>
+                            </div>
+                        ) : (
+                            <div className="p-4 border-2 border-dashed border-gray-300 text-center text-xs uppercase tracking-widest text-gray-400">
+                                NO DESTINATION SELECTED
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Payment */}
+                    <div className="space-y-4">
+                        <div className="bg-black text-white text-center py-2 text-xs font-bold uppercase tracking-[0.2em]">
+                            SECURE CHECKOUT
+                        </div>
+                        <div className="hover:grayscale transition-all duration-300">
+                            <PayPalButton totalPrice={totalPrice} onSuccess={handlePaymentSuccess} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <SimpleSnackbar open={open} setOpen={setOpen} msg={msg} />
         </div>
     )
 }

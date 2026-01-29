@@ -1,181 +1,195 @@
 'use client';
 
 import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import CssBaseline from '@mui/material/CssBaseline';
-import useScrollTrigger from '@mui/material/useScrollTrigger';
-import { Button, Menu, MenuItem, MenuItemProps, Stack, styled } from '@mui/material';
-import SwipeableTemporaryDrawer from './drawermoble';
 import { useRouter } from 'next/navigation';
-import { Bungee } from 'next/font/google';
 import { resetAuthCookies } from '../lib/actions';
-
-const bunjee = Bungee({ weight: '400', subsets: ['latin'] });
+import { ShoppingCart, Person, Menu as MenuIcon, Close as CloseIcon, Logout, ShoppingBag } from '@mui/icons-material';
+import Link from 'next/link';
+// We will replace the external drawer with an internal Tailwind one for better coherence
+// import SwipeableTemporaryDrawer from './drawermoble'; 
 
 interface Props {
-  /**
-   * Injected by the documentation to work in an iframe.
-   * You won't need it on your project.
-   */
-  window?: () => Window;
-  children?: React.ReactElement<{ elevation?: number }>;
   userId: string | null;
 }
 
-function ElevationScroll(props: Props) {
-  const { children, window } = props;
-  // Note that you normally won't need to set the window ref as useScrollTrigger
-  // will default to window.
-  // This is only being set here because the demo is in an iframe.
-  const trigger = useScrollTrigger({
-    disableHysteresis: true,
-    threshold: 0,
-    target: window ? window() : undefined,
-  });
-
-  return children
-    ? React.cloneElement(children, {
-      elevation: trigger ? 1 : 0,
-    })
-    : null;
-}
-
-const OwnMenuItem = styled(MenuItem)<MenuItemProps>(({ theme }) => ({
-  color: 'brown'
-}));
-
-export default function ElevateAppBar(props: Props) {
-  const { userId } = props;
-  console.log(userId);
+export default function PrimarySearchAppBar({ userId }: Props) {
   const router = useRouter();
-  const [isLoggedIn, setisLoggedIn] = React.useState<boolean>(false);
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+  const [isScrolled, setIsScrolled] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [userMenuOpen, setUserMenuOpen] = React.useState(false);
+
+  // Handle scroll for glass effect
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleLogout = async () => {
+    await resetAuthCookies();
+    router.push('/');
+    router.refresh();
   };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
 
-  const navigate = (path: string) => {
-    switch (path) {
-      case "signup":
-        router.push('/signup');
-        break;
-      case "signin":
-        router.push('/signin');
-        break;
-      case "cart":
-        router.push('/cart');
-        break;
-      case "Orders":
-        router.push('/orderList');
-        break;
-      default:
-        router.push('/');
-    }
-  }
-
-  const submitLogout = async () => {
-    resetAuthCookies();
-
-    router.push('/')
-  }
-
+  const navLinks = [
+    { name: 'Home', href: '/' },
+    { name: 'Products', href: '/products' }, // Assuming this route exists or will exist
+    { name: 'Categories', href: '/categories/?name=All' },
+    { name: 'Contact', href: '/contact' },
+  ];
 
   return (
-    <React.Fragment>
-      <CssBaseline />
-      <ElevationScroll {...props}>
-        <AppBar color="transparent" sx={{ backdropFilter: "blur(10px)" }}>
-          <Toolbar sx={{ color: 'InfoText', justifyContent: 'space-between', }}>
-            <div className='sm:hidden'>
-              <SwipeableTemporaryDrawer userId={userId} />
-            </div>
-            <Typography variant="h6" component="div" color='blue-500' className={bunjee.className}>
-              Eccomerce
-            </Typography>
-            <Stack justifyContent={'flex-start'} direction={'row'} display={{ xs: 'none', sm: 'inline-block' }}>
+    <nav
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white/70 backdrop-blur-md shadow-sm dark:bg-slate-900/70' : 'bg-transparent'
+        }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
 
-              <Button variant='text' disableRipple style={{ color: 'brown' }}>
-                products
-              </Button>
-              <Button
-                variant='text'
-                disableRipple
-                style={{ color: 'brown' }}
-                onClick={() => router.push('categories/')}
+          {/* Logo */}
+          <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => router.push('/')}>
+            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              ECCOMERCE
+            </span>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex space-x-8 items-center">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className="text-foreground/80 hover:text-primary transition-colors font-medium text-sm lg:text-base"
               >
-                category
-              </Button>
-              <Button variant='text' disableRipple style={{ color: 'brown' }}>
-                Contact Us
-              </Button>
-              {userId ?
-                (<>
-                  <Button
-                    id="basic-button"
-                    aria-controls={open ? 'basic-menu' : undefined}
-                    aria-haspopup="true"
-                    aria-expanded={open ? 'true' : undefined}
-                    onClick={handleClick}
-                    variant='text'
-                    disableRipple
-                    style={{ color: 'brown' }}
+                {link.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* User Actions */}
+          <div className="hidden md:flex items-center space-x-4">
+            {userId ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center space-x-2 p-2 rounded-full hover:bg-muted transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <Person fontSize="small" />
+                  </div>
+                  <span className="text-sm font-medium">Account</span>
+                </button>
+
+                {/* Dropdown User Menu */}
+                {userMenuOpen && (
+                  <div
+                    className="absolute right-0 mt-2 w-48 bg-card rounded-xl shadow-lg border border-border py-2 animate-in fade-in slide-in-from-top-5 duration-200"
+                    onMouseLeave={() => setUserMenuOpen(false)}
                   >
-                    Dashboard
-                  </Button>
-                  <Menu
-                    id="basic-menu"
-                    anchorEl={anchorEl}
-                    open={open}
-                    onClose={handleClose}
-                    MenuListProps={{
-                      'aria-labelledby': 'basic-button',
-                    }}
-                  >
-                    <OwnMenuItem color='brown' onClick={handleClose}>Profile</OwnMenuItem>
-                    <OwnMenuItem onClick={() => { navigate('cart'); }}>Cart</OwnMenuItem>
-                    <OwnMenuItem onClick={() => { navigate('Orders'); }}>Orders</OwnMenuItem>
-                    <OwnMenuItem onClick={submitLogout}>Logout</OwnMenuItem>
-                  </Menu>
-                </>)
-                :
-                (<>
-                  <Button
-                    id="basic-button"
-                    aria-controls={open ? 'basic-menu' : undefined}
-                    aria-haspopup="true"
-                    aria-expanded={open ? 'true' : undefined}
-                    onClick={handleClick}
-                    variant='text'
-                    disableRipple
-                    style={{ color: 'brown' }}
-                  >
-                    Authenticate
-                  </Button>
-                  <Menu
-                    id="basic-menu"
-                    anchorEl={anchorEl}
-                    open={open}
-                    onClose={handleClose}
-                    sx={{ color: 'green' }}
-                    MenuListProps={{
-                      'aria-labelledby': 'basic-button',
-                    }}
-                  >
-                    <OwnMenuItem style={{ color: 'brown' }} onClick={() => { navigate('signup') }}>SignUp</OwnMenuItem>
-                    <OwnMenuItem onClick={() => { navigate('signin') }}>LogIn</OwnMenuItem>
-                  </Menu>
-                </>)
-              }
-            </Stack>
-          </Toolbar>
-        </AppBar>
-      </ElevationScroll>
-    </React.Fragment>
+                    <Link href="/profile" className="block px-4 py-2 text-sm hover:bg-muted text-foreground/80">
+                      Profile
+                    </Link>
+                    <Link href="/cart" className="block px-4 py-2 text-sm hover:bg-muted text-foreground/80">
+                      <div className="flex items-center justify-between">
+                        <span>Cart</span>
+                        <ShoppingCart fontSize="small" className="text-primary" />
+                      </div>
+                    </Link>
+                    <Link href="/orderList" className="block px-4 py-2 text-sm hover:bg-muted text-foreground/80">
+                      Orders
+                    </Link>
+                    <div className="h-px bg-border my-1"></div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center space-x-2"
+                    >
+                      <Logout fontSize="small" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => router.push('/signin')}
+                  className="text-sm font-medium px-4 py-2 text-foreground/70 hover:text-primary transition-colors"
+                >
+                  Log In
+                </button>
+                <button
+                  onClick={() => router.push('/signup')}
+                  className="text-sm font-medium px-4 py-2 bg-primary text-primary-foreground rounded-full shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all hover:scale-105 active:scale-95"
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 rounded-md text-foreground/80 hover:bg-muted transition-colors"
+            >
+              {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-20 left-0 w-full bg-background/95 backdrop-blur-xl border-b border-border shadow-xl animate-in slide-in-from-top-5 duration-200">
+          <div className="px-4 py-6 space-y-4">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-lg font-medium text-foreground/80 hover:text-primary"
+              >
+                {link.name}
+              </Link>
+            ))}
+            <div className="h-px bg-border my-4"></div>
+            {userId ? (
+              <div className="space-y-3">
+                <Link href="/profile" className="flex items-center space-x-3 text-foreground/80" onClick={() => setMobileMenuOpen(false)}>
+                  <Person className="text-primary" /> <span>Profile</span>
+                </Link>
+                <Link href="/cart" className="flex items-center space-x-3 text-foreground/80" onClick={() => setMobileMenuOpen(false)}>
+                  <ShoppingCart className="text-secondary" /> <span>Cart</span>
+                </Link>
+                <Link href="/orderList" className="flex items-center space-x-3 text-foreground/80" onClick={() => setMobileMenuOpen(false)}>
+                  <ShoppingBag className="text-blue-500" /> <span>Orders</span>
+                </Link>
+                <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="flex items-center space-x-3 text-red-500">
+                  <Logout /> <span>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col space-y-3">
+                <button
+                  onClick={() => { router.push('/signin'); setMobileMenuOpen(false); }}
+                  className="w-full py-3 border border-border rounded-xl font-medium"
+                >
+                  Log In
+                </button>
+                <button
+                  onClick={() => { router.push('/signup'); setMobileMenuOpen(false); }}
+                  className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium shadow-lg shadow-primary/20"
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </nav>
   );
 }

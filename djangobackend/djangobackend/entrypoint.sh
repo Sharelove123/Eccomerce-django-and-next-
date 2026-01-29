@@ -11,6 +11,7 @@ then
     echo "The database is up and running :-D"
 fi
 
+python manage.py collectstatic --noinput
 python manage.py makemigrations
 python manage.py migrate
 

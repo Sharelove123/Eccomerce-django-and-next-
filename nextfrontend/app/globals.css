@@ -3,19 +3,127 @@
 @tailwind utilities;
 
 :root {
+  /* Bold Minimalist Palette */
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --secondary: #222222;
+  --secondary-foreground: #ffffff;
+
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #000000;
+
+  --card: #ffffff;
+  --card-foreground: #000000;
+
+  --muted: #f4f4f4;
+  --muted-foreground: #666666;
+
+  --border: #000000;
+  /* Sharp Black Borders */
+
+  --accent: #2563eb;
+  /* Electric Blue for small highlights */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
-    --foreground: #ededed;
+    --foreground: #ffffff;
+
+    --card: #111111;
+    --card-foreground: #ffffff;
+
+    --muted: #262626;
+    --muted-foreground: #a3a3a3;
+
+    --border: #333333;
+    --accent: #4f46e5;
   }
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Brutalist Utilities */
+.brutal-border {
+  border: 1px solid var(--border);
+}
+
+.brutal-border-b {
+  border-bottom: 1px solid var(--border);
+}
+
+.brutal-shadow {
+  box-shadow: 4px 4px 0px 0px var(--foreground);
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.brutal-shadow:active {
+  box-shadow: 0px 0px 0px 0px var(--foreground);
+  transform: translate(2px, 2px);
+}
+
+.brutal-btn {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid var(--foreground);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.brutal-btn:hover {
+  background-color: var(--background);
+  color: var(--foreground);
+  box-shadow: 4px 4px 0px 0px var(--foreground);
+  transform: translate(-2px, -2px);
+}
+
+/* Animations - Snappy & Mechanical */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.delay-100 {
+  animation-delay: 100ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}
+
+/* Custom Scrollbar - Minimal */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--foreground);
 }

@@ -43,3 +43,5 @@ typing_extensions==4.12.2
 tzdata==2024.2
 urllib3==2.2.3
 zope.interface==7.2
+whitenoise==6.6.0
+dj-database-url==2.1.0

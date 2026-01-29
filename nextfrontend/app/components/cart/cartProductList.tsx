@@ -1,45 +1,27 @@
 'use client'
 import * as React from 'react';
-import Accordion, {
-    AccordionSlots,
-    accordionClasses,
-} from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails, {
-    accordionDetailsClasses,
-} from '@mui/material/AccordionDetails';
-import Typography from '@mui/material/Typography';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import Fade from '@mui/material/Fade';
-import { Bungee, Lilita_One } from 'next/font/google';
-import { Radio } from '@mui/material';
-import { SouthAmericaOutlined } from '@mui/icons-material';
-import ProductCard from './productCard';
-import { CartItem, Product } from '@/app/utils/types';
+import { CartItem } from '@/app/utils/types';
 import { useEffect, useState } from 'react';
+import ProductCard from './productCard';
 import SimpleSnackbar from '../snackbar';
+import Link from 'next/link';
+import { Lilita_One, JetBrains_Mono } from "next/font/google";
 
-
-const bunjee = Bungee({ weight: '400', subsets: ['latin'] });
 const lilita_One = Lilita_One({ weight: '400', subsets: ['latin'] });
+const mono = JetBrains_Mono({ subsets: ['latin'] });
 
 interface CartProductListProps {
     onCartChange: () => void;
 }
 
 const CartProductList: React.FC<CartProductListProps> = ({ onCartChange }) => {
-    const [expanded, setExpanded] = React.useState(false);
-    const handleExpansion = () => {
-        setExpanded((prevExpanded) => !prevExpanded);
-    };
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
     const [open, setOpen] = React.useState(false);
     const [msg, setMsg] = useState('');
+
     const handleClick = () => {
         setOpen(true);
     };
-
 
     useEffect(() => {
         const storedCartItems = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -47,99 +29,80 @@ const CartProductList: React.FC<CartProductListProps> = ({ onCartChange }) => {
     }, []);
 
     const removeFromCart = (productId: number) => {
-        // Get the existing cart from local storage
         const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
-        // Filter out the item with the matching product ID
         const updatedCart = existingCart.filter((item: any) => item.product.id !== productId);
-        // Save the updated cart to local storage
         localStorage.setItem('cart', JSON.stringify(updatedCart));
-        console.log('Product removed from cart:', productId);
         setCartItems((prevItems) => prevItems.filter(item => item.product.id !== productId));
         onCartChange();
-        setMsg('Product removed from cart');
+        setMsg('ITEM REMOVED');
         handleClick();
     };
 
     const updateCart = (productId: number, incdecinfo: String) => {
-        // Get the existing cart from local storage
         const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
-        // Find the index of the product in the cart
         const productIndex = existingCart.findIndex((item: any) => item.product.id === productId);
 
         if (productIndex !== -1) {
             if (incdecinfo == 'increment') {
-                // Update the quantity of the product
-                existingCart[productIndex].quantity = existingCart[productIndex].quantity+1;
-            }else{
-                existingCart[productIndex].quantity = existingCart[productIndex].quantity - 1;
+                existingCart[productIndex].quantity = existingCart[productIndex].quantity + 1;
+            } else {
+                if (existingCart[productIndex].quantity > 1) {
+                    existingCart[productIndex].quantity = existingCart[productIndex].quantity - 1;
+                }
             }
-            // Save the updated cart to local storage
             localStorage.setItem('cart', JSON.stringify(existingCart));
-            console.log('Cart updated:', existingCart);
+            setCartItems(existingCart);
         }
         onCartChange();
-        setMsg('Cart updated');
+        setMsg('CART UPDATED');
         handleClick();
     };
 
+    // Empty State - Brutalist Style
+    if (cartItems.length === 0) {
+        return (
+            <div className="w-full flex flex-col items-center justify-center py-24 border-2 border-dashed border-gray-300 bg-gray-50/50">
+                <h3 className={`text-4xl md:text-6xl font-black text-black uppercase mb-4 tracking-tighter ${lilita_One.className}`}>
+                    Cart Void
+                </h3>
+                <p className={`text-gray-500 mb-8 uppercase tracking-widest text-xs md:text-sm ${mono.className}`}>
+                    0 Items Detected // Initialization Required
+                </p>
+                <Link href="/" className="bg-black text-white px-8 py-4 font-bold uppercase tracking-widest hover:bg-white hover:text-black border-2 border-black transition-all hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    Initiate Shopping
+                </Link>
+            </div>
+        )
+    }
 
     return (
-        <div className='w-5/6 mr-4'>
-            <div className='flex flex-row space-x-6 justify-between'>
-                <div className='flex flex-row space-x-6'>
-                    <Typography className={`${bunjee.className} bCart-2 rounded-lg w-8 flex justify-center items-center `}>1</Typography>
-                    <Typography className={`${lilita_One.className} flex justify-center items-center `}>Review product 's set</Typography>
+        <div className='w-full'>
+            <div className="flex items-end justify-between border-b-4 border-black pb-4 mb-8">
+                <h2 className={`text-4xl font-black text-black uppercase tracking-tighter leading-none ${lilita_One.className}`}>
+                    Inventory
+                </h2>
+                <div className={`bg-black text-white px-3 py-1 font-bold text-sm select-none ${mono.className}`}>
+                    COUNT: {cartItems.length}
                 </div>
-                <Typography className={`${lilita_One.className} flex justify-center items-center justify-self-end text-red-500`}>message seller</Typography>
             </div>
-            <Accordion
-                expanded={expanded}
-                onChange={handleExpansion}
-                slots={{ transition: Fade as AccordionSlots['transition'] }}
-                slotProps={{ transition: { timeout: 400 } }}
-                sx={[
-                    expanded
-                        ? {
-                            [`& .${accordionClasses.region}`]: {
-                                height: 'auto',
-                            },
-                            [`& .${accordionDetailsClasses.root}`]: {
-                                display: 'block',
-                            },
-                        }
-                        : {
-                            [`& .${accordionClasses.region}`]: {
-                                height: 0,
-                            },
-                            [`& .${accordionDetailsClasses.root}`]: {
-                                display: 'none',
-                            },
-                        },
-                ]}
-            >
-                <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1-content"
-                    id="panel1-header"
-                    style={{ minHeight: '6px' }}
-                    className='bg-blue-100'
-                >
-                    <div className='flex row bg-transparent space-x-1 h-[5px] justify-self-center justify-center items-center'>
-                        <Radio defaultChecked style={{ height: '2px', minHeight: '4px' }} />
-                        <Typography className={lilita_One.className}> Ashutosh jarelia</Typography>
-                        <SouthAmericaOutlined />
+
+            <div className="flex flex-col gap-6">
+                {cartItems.map((item: CartItem, index: number) => (
+                    <div
+                        key={index}
+                        className="animate-slide-up"
+                        style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                        <ProductCard
+                            cartItem={item}
+                            removeFromCart={removeFromCart}
+                            updateCart={updateCart}
+                        />
                     </div>
-                </AccordionSummary>
-                <AccordionDetails>
-                    {
-                        cartItems.map((item: CartItem, index: number) => {
-                            
-                            return <ProductCard key={index} cartItem={item} removeFromCart={removeFromCart} updateCart={updateCart} />
-                        })
-                    }
-                </AccordionDetails>
-            </Accordion>
-            <SimpleSnackbar open={open} setOpen={setOpen} msg = {msg}/>
+                ))}
+            </div>
+
+            <SimpleSnackbar open={open} setOpen={setOpen} msg={msg} />
         </div>
     );
 }

@@ -7,7 +7,8 @@ from .models import Address,Order, OrderItem
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        fields = '__all__' 
+        fields = '__all__'
+        read_only_fields = ['user'] 
 
 
 

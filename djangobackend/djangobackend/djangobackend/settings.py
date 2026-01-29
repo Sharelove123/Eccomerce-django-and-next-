@@ -14,24 +14,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True #bool(os.environ.get("DEBUG", default=0))
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-if DEBUG:
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "64.226.81.32"]
-else:
-    ALLOWED_HOSTS = ["64.226.81.32"]
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 AUTH_USER_MODEL = 'useraccount.User'
 
 SITE_ID = 1
 
-if DEBUG:
-    WEBSITE_URL = 'http://localhost:8000'
-else:
-    WEBSITE_URL = 'http://64.226.81.32:1337'
+WEBSITE_URL = os.environ.get("WEBSITE_URL", "http://localhost:8000")
 
 CHANNEL_LAYERS = {
     'default': {
@@ -64,29 +59,11 @@ REST_FRAMEWORK = {
     )
 }
 
-CORS_ALLOWED_ORIGINS = [
-     "http://localhost:3000",
-    'http://127.0.0.1:8000',
-    'http://127.0.0.1:3000',
-    'http://64.226.81.32',
-    'http://64.226.81.32:1337'
-]
+CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    'http://127.0.0.1:8000',
-    'http://127.0.0.1:3000',
-    'http://64.226.81.32',
-    'http://64.226.81.32:1337'
-]
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "http://localhost:3000").split(",")
 
-CORS_ORIGINS_WHITELIST = [
-    "http://localhost:3000",
-    'http://127.0.0.1:8000',
-    'http://127.0.0.1:3000',
-    'http://64.226.81.32',
-    'http://64.226.81.32:1337'
-]
+CORS_ORIGINS_WHITELIST = os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -126,6 +103,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -160,16 +138,31 @@ ASGI_APPLICATION = 'djangobackend.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# Database
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': os.environ.get("SQL_ENGINE"),
-        'NAME': os.environ.get("SQL_DATABASE"),
-        'USER': os.environ.get("SQL_USER"),
-        'PASSWORD': os.environ.get("SQL_PASSWORD"),
-        'HOST': os.environ.get("SQL_HOST"),
-        'PORT': os.environ.get("SQL_PORT"),
+    'default': dj_database_url.config(
+        default=os.environ.get("DATABASE_URL"),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+} 
+# If DATABASE_URL not found (local dev without it), fallback or it stays empty/default.
+# Actually, let's keep the manual fallback if user wants to use SQL_ env vars locally or if DATABASE_URL is missing.
+if not DATABASES['default']:
+    DATABASES = {
+        'default': {
+            'ENGINE': os.environ.get("SQL_ENGINE", 'django.db.backends.sqlite3'), # Default to sqlite if nothing
+            'NAME': os.environ.get("SQL_DATABASE", BASE_DIR / "db.sqlite3"),
+            'USER': os.environ.get("SQL_USER"),
+            'PASSWORD': os.environ.get("SQL_PASSWORD"),
+            'HOST': os.environ.get("SQL_HOST"),
+            'PORT': os.environ.get("SQL_PORT"),
+        }
     }
-}
 
 
 # Password validation
@@ -207,6 +200,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
