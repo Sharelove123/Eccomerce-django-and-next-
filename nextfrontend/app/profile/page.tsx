@@ -3,29 +3,49 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { handleLogout } from '@/app/lib/actions';
+import apiService from '@/app/services/apiService';
 import Link from 'next/link';
 
 const ProfilePage = () => {
     const router = useRouter();
     const [user, setUser] = useState<{ name: string, email: string } | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Since we don't have a direct profile API in the snippet, we'll simulate or read from local storage if available
-        // Or just show a generic profile for now.
-        // real implementation would likely fetch from /api/user/me/
-        const storedUser = localStorage.getItem('user_info');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        } else {
-            // Fallback
-            setUser({ name: 'Valued Customer', email: 'user@example.com' });
-        }
+        const fetchUser = async () => {
+            try {
+                const response = await apiService.get('/api/auth/user/');
+                if (response && !response.error) {
+                    setUser(response);
+                } else {
+                    router.push('/signin');
+                }
+            } catch (error) {
+                console.error('Error fetching user:', error);
+                router.push('/signin');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUser();
     }, []);
 
     const onLogout = async () => {
         await handleLogout();
         router.push('/signin');
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-background pt-24 pb-12 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                    <p className="text-muted-foreground font-medium animate-pulse">Fetching Profile...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-background pt-24 pb-12">

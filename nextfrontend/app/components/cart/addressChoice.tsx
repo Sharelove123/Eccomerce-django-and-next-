@@ -99,6 +99,30 @@ const AddressChoice: React.FC<AddressChoiceProps> = ({ onAddressSelect }) => {
         }
     };
 
+    const handleDeleteAddress = async (e: React.MouseEvent, id: number) => {
+        e.stopPropagation(); // Don't select the address when deleting
+        if (!confirm("Are you sure you want to remove this location?")) return;
+
+        try {
+            const response = await apiService.delete(`/api/cart/addresses/${id}/`);
+            setMsg("ADDRESS REMOVED");
+            handleSnackbarClick();
+            
+            // If the deleted address was selected, clear selection
+            if (id === selectedAddressId) {
+                setSelectedAddressId(null);
+                onAddressSelect(0);
+                localStorage.removeItem('selectedAddress');
+            }
+            
+            fetchAddresses(); // Refresh list
+        } catch (error) {
+            console.error('Error deleting address:', error);
+            setMsg("DELETE FAILED");
+            handleSnackbarClick();
+        }
+    };
+
     return (
         <div className="w-full">
             <div className="flex items-end justify-between mb-8 border-b-2 border-dashed border-gray-300 pb-2">
@@ -122,8 +146,17 @@ const AddressChoice: React.FC<AddressChoiceProps> = ({ onAddressSelect }) => {
                             : 'border-black bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
                             }`}
                     >
+                        {/* Delete Button */}
+                        <button
+                            onClick={(e) => handleDeleteAddress(e, address.id)}
+                            className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-transparent text-gray-400 hover:text-red-500 hover:scale-110 transition-all z-10 font-black"
+                            title="Delete address"
+                        >
+                            ×
+                        </button>
+
                         {selectedAddressId === address.id && (
-                            <div className="absolute top-0 right-0 bg-white text-black px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest">
+                            <div className="absolute top-0 right-8 bg-white text-black px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest">
                                 Selected
                             </div>
                         )}

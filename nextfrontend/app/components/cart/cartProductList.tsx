@@ -34,6 +34,7 @@ const CartProductList: React.FC<CartProductListProps> = ({ onCartChange }) => {
         localStorage.setItem('cart', JSON.stringify(updatedCart));
         setCartItems((prevItems) => prevItems.filter(item => item.product.id !== productId));
         onCartChange();
+        window.dispatchEvent(new Event('storage'));
         setMsg('ITEM REMOVED');
         handleClick();
     };
@@ -54,6 +55,7 @@ const CartProductList: React.FC<CartProductListProps> = ({ onCartChange }) => {
             setCartItems(existingCart);
         }
         onCartChange();
+        window.dispatchEvent(new Event('storage'));
         setMsg('CART UPDATED');
         handleClick();
     };
