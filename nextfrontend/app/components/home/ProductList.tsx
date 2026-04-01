@@ -20,7 +20,7 @@ const ProductList: React.FC<ProductListProps> = ({ title, category }) => {
         const fetchProducts = async () => {
             // Assuming your API endpoint structure is reusable like this
             try {
-                const response = await apiService.getWithoutToken(`/api/core/category/${category}/?page=1`);
+                const response = await apiService.getWithoutToken(`/api/core/category/${encodeURIComponent(category)}/?page=1`);
                 console.log(`Fetched ${category}:`, response);
                 if (response.results) {
                     setProducts(response.results);
@@ -51,7 +51,7 @@ const ProductList: React.FC<ProductListProps> = ({ title, category }) => {
                         <div className="h-1 w-20 bg-primary mt-2 rounded-full"></div>
                     </div>
                     <Link
-                        href={`/categories/?name=${category}`}
+                        href={`/categories/?name=${encodeURIComponent(category)}`}
                         className="group flex items-center space-x-1 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
                     >
                         <span>View All</span>

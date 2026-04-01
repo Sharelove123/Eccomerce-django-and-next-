@@ -1,11 +1,19 @@
 'use client'
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import apiService from '../services/apiService';
 import { Product } from '../utils/types';
 import ProductCard from '../components/ProductCard';
 
 export default function Category() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-background pt-24 pb-12 flex items-center justify-center"><div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center animate-pulse">⏳</div></div>}>
+            <CategoryContent />
+        </Suspense>
+    );
+}
+
+function CategoryContent() {
     const categoryNameParam = useSearchParams();
     const queryCategory = categoryNameParam.get('name');
     const [categoryName, setCategoryName] = useState<string>('All');
@@ -30,7 +38,7 @@ export default function Category() {
                 // If 'All' simply fetches everything, we might need a different API call or the backend supports it.
                 // Keeping existing logic structure but ensuring generic 'All' handling if supported.
 
-                const endpoint = `/api/core/category/${categoryName}/?page=${page}`;
+                const endpoint = `/api/core/category/${encodeURIComponent(categoryName)}/?page=${page}`;
                 const response = await apiService.getWithoutToken(endpoint);
 
                 if (response && response.results) {
