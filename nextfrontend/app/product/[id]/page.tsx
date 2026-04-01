@@ -94,7 +94,12 @@ export default function ProductDetail() {
         product.imagelist.img2,
         product.imagelist.img3,
         product.imagelist.img4
-    ].filter(Boolean) : [];
+    ].filter(Boolean) : [
+        `https://picsum.photos/seed/product${product.id}a/600/600`,
+        `https://picsum.photos/seed/product${product.id}b/600/600`,
+        `https://picsum.photos/seed/product${product.id}c/600/600`,
+        `https://picsum.photos/seed/product${product.id}d/600/600`,
+    ];
 
     return (
         <div className="min-h-screen bg-slate-50 pt-24 pb-12 relative overflow-hidden">

@@ -19,8 +19,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             {/* Image Container */}
             <div className="relative h-48 w-full bg-muted flex items-center justify-center p-4 overflow-hidden">
                 <img
-                    src={product.imagelist?.img1 || '/placeholder.png'}
-                    alt={product.title || "Product Image"} // Assuming Product type has title, if not fallback
+                    src={product.imagelist?.img1 || `https://picsum.photos/seed/product${product.id}/400/400`}
+                    alt={product.title || "Product Image"}
                     className="h-full w-full object-contain group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
