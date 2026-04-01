@@ -15,6 +15,7 @@ const SignUp = () => {
 
     const submitSignup = async (event: React.FormEvent) => {
         event.preventDefault();
+        setErrors([]);
         setLoading(true);
 
         if (password1 !== password2) {
@@ -23,23 +24,29 @@ const SignUp = () => {
             return;
         }
 
-        const formData = {
-            email: email,
-            password1: password1,
-            password2: password2
-        }
+        try {
+            const formData = {
+                email: email,
+                password1: password1,
+                password2: password2
+            }
 
-        const response = await apiService.postWithoutToken('/api/auth/register/', JSON.stringify(formData));
-        setLoading(false);
+            const response = await apiService.postWithoutToken('/api/auth/register/', JSON.stringify(formData));
 
-        if (response.access) {
-            handleLogin(response.user.pk, response.access, response.refresh);
-            router.replace('/');
-        } else {
-            const tmpErrors: string[] = Object.values(response).map((error: any) => {
-                return error;
-            });
-            setErrors(tmpErrors.length > 0 ? tmpErrors : ["Registration failed."]);
+            if (response.access) {
+                handleLogin(response.user.pk, response.access, response.refresh);
+                router.replace('/');
+            } else {
+                const tmpErrors: string[] = Object.entries(response).map(([key, val]) => {
+                    if (Array.isArray(val)) return `${key}: ${val.join(', ')}`;
+                    return `${key}: ${val}`;
+                });
+                setErrors(tmpErrors.length > 0 ? tmpErrors : ["Registration failed. Please try again."]);
+            }
+        } catch (error) {
+            setErrors(["Network error. The server may be starting up — please try again in a moment."]);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -72,7 +79,8 @@ const SignUp = () => {
                                     id="email"
                                     autoComplete="email"
                                     required
-                                    className="block w-full rounded-lg border-0 bg-muted/50 py-2.5 px-3 text-foreground shadow-sm ring-1 ring-inset ring-border placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 transition-all"
+                                    placeholder="you@example.com"
+                                    className="block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 py-2.5 px-3 text-black dark:text-white shadow-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm sm:leading-6 transition-all"
                                 />
                             </div>
                         </div>
@@ -87,7 +95,8 @@ const SignUp = () => {
                                     id="password"
                                     autoComplete="new-password"
                                     required
-                                    className="block w-full rounded-lg border-0 bg-muted/50 py-2.5 px-3 text-foreground shadow-sm ring-1 ring-inset ring-border placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 transition-all"
+                                    placeholder="••••••••"
+                                    className="block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 py-2.5 px-3 text-black dark:text-white shadow-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm sm:leading-6 transition-all"
                                 />
                             </div>
                         </div>
@@ -102,7 +111,8 @@ const SignUp = () => {
                                     id="password2"
                                     autoComplete="new-password"
                                     required
-                                    className="block w-full rounded-lg border-0 bg-muted/50 py-2.5 px-3 text-foreground shadow-sm ring-1 ring-inset ring-border placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 transition-all"
+                                    placeholder="••••••••"
+                                    className="block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 py-2.5 px-3 text-black dark:text-white shadow-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm sm:leading-6 transition-all"
                                 />
                             </div>
                         </div>

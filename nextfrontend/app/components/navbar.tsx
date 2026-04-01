@@ -49,7 +49,9 @@ export default function PrimarySearchAppBar({ userId }: Props) {
 
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => router.push('/')}>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <span className={`text-2xl font-bold tracking-tighter transition-colors ${
+              isScrolled ? 'bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent' : 'text-white'
+            }`}>
               ECCOMERCE
             </span>
           </div>
@@ -60,7 +62,9 @@ export default function PrimarySearchAppBar({ userId }: Props) {
               <Link
                 key={link.name}
                 href={link.href}
-                className="text-foreground/80 hover:text-primary transition-colors font-medium text-sm lg:text-base"
+                className={`transition-colors font-medium text-sm lg:text-base ${
+                  isScrolled ? 'text-foreground/80 hover:text-primary' : 'text-white/90 hover:text-white'
+                }`}
               >
                 {link.name}
               </Link>
@@ -78,13 +82,13 @@ export default function PrimarySearchAppBar({ userId }: Props) {
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                     <Person fontSize="small" />
                   </div>
-                  <span className="text-sm font-medium">Account</span>
+                  <span className={`text-sm font-medium ${isScrolled ? 'text-foreground' : 'text-white'}`}>Account</span>
                 </button>
 
                 {/* Dropdown User Menu */}
                 {userMenuOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-48 bg-card rounded-xl shadow-lg border border-border py-2 animate-in fade-in slide-in-from-top-5 duration-200"
+                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-border py-2 animate-in fade-in slide-in-from-top-5 duration-200 z-[100]"
                     onMouseLeave={() => setUserMenuOpen(false)}
                   >
                     <Link href="/profile" className="block px-4 py-2 text-sm hover:bg-muted text-foreground/80">
@@ -114,7 +118,9 @@ export default function PrimarySearchAppBar({ userId }: Props) {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => router.push('/signin')}
-                  className="text-sm font-medium px-4 py-2 text-foreground/70 hover:text-primary transition-colors"
+                  className={`text-sm font-medium px-4 py-2 transition-colors ${
+                    isScrolled ? 'text-foreground/70 hover:text-primary' : 'text-white/80 hover:text-white'
+                  }`}
                 >
                   Log In
                 </button>
@@ -132,7 +138,9 @@ export default function PrimarySearchAppBar({ userId }: Props) {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-md text-foreground/80 hover:bg-muted transition-colors"
+              className={`p-2 rounded-md transition-colors ${
+                isScrolled ? 'text-foreground/80 hover:bg-muted' : 'text-white hover:bg-white/10'
+              }`}
             >
               {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
             </button>
