@@ -144,10 +144,20 @@ ASGI_APPLICATION = 'djangobackend.asgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 import dj_database_url
+from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
+
+db_url = os.environ.get("DATABASE_URL")
+if db_url:
+    # Strip ?pgbouncer=true if present as psycopg2 (Django's driver) doesn't recognize it
+    parsed = urlparse(db_url)
+    query = parse_qs(parsed.query)
+    query.pop('pgbouncer', None)
+    new_query = urlencode(query, doseq=True)
+    db_url = urlunparse(parsed._replace(query=new_query))
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get("DATABASE_URL"),
+        default=db_url,
         conn_max_age=0,
         conn_health_checks=True,
     )
