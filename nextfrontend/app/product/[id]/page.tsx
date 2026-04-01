@@ -217,20 +217,20 @@ export default function ProductDetail() {
                                 <div className="pt-4 space-y-6">
                                     {/* Quantity Selector */}
                                     <div className="flex items-center gap-4">
-                                        <span className="text-slate-500 font-medium uppercase tracking-wider text-sm">Quantity</span>
-                                        <div className="flex items-center bg-white rounded-xl p-1 shadow-sm border border-slate-200">
+                                        <span className="text-slate-500 font-bold uppercase tracking-wider text-xs">Quantity Selection</span>
+                                        <div className="flex items-center bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                                             <button
                                                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                                className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-600 transition-colors"
+                                                className="w-12 h-12 flex items-center justify-center hover:bg-black hover:text-white transition-colors border-r-2 border-black"
                                             >
-                                                -
+                                                <span className="text-xl font-black">-</span>
                                             </button>
-                                            <span className="w-12 text-center font-bold text-slate-800">{quantity}</span>
+                                            <span className="w-14 text-center font-black text-xl text-black">{quantity}</span>
                                             <button
                                                 onClick={() => setQuantity(quantity + 1)}
-                                                className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-50 text-indigo-600 transition-colors"
+                                                className="w-12 h-12 flex items-center justify-center hover:bg-black hover:text-white transition-colors border-l-2 border-black"
                                             >
-                                                +
+                                                <span className="text-xl font-black">+</span>
                                             </button>
                                         </div>
                                     </div>

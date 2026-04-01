@@ -69,9 +69,9 @@ const ProductCard: React.FC<cartItemProps> = ({ cartItem, removeFromCart, update
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
                     {/* Quantity Control - Brutalist Style */}
-                    <div className="flex items-center border border-black bg-white">
+                    <div className="flex items-center border-2 border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
                         <button
-                            className="w-10 h-10 flex items-center justify-center hover:bg-black hover:text-white transition-colors disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-black border-r border-black"
+                            className="w-10 h-10 flex items-center justify-center hover:bg-black hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-black border-r-2 border-black"
                             onClick={() => {
                                 if (productQuantity > 1) {
                                     setproductQuantity(productQuantity - 1);
@@ -80,21 +80,23 @@ const ProductCard: React.FC<cartItemProps> = ({ cartItem, removeFromCart, update
                             }}
                             disabled={productQuantity <= 1}
                         >
-                            <span className="text-xl font-bold font-mono">-</span>
+                            <span className="text-xl font-black font-mono">-</span>
                         </button>
 
-                        <span className={`w-12 text-center font-bold text-black ${mono.className}`}>
-                            {productQuantity}
-                        </span>
+                        <div className="w-12 h-10 flex items-center justify-center bg-white">
+                            <span className={`text-lg font-black text-black ${mono.className}`}>
+                                {productQuantity}
+                            </span>
+                        </div>
 
                         <button
-                            className="w-10 h-10 flex items-center justify-center hover:bg-black hover:text-white transition-colors border-l border-black"
+                            className="w-10 h-10 flex items-center justify-center hover:bg-black hover:text-white transition-colors border-l-2 border-black"
                             onClick={() => {
                                 setproductQuantity(productQuantity + 1);
                                 updateCart(cartItem.product.id, 'increment');
                             }}
                         >
-                            <span className="text-xl font-bold font-mono">+</span>
+                            <span className="text-xl font-black font-mono">+</span>
                         </button>
                     </div>
 

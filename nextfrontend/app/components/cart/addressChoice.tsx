@@ -73,7 +73,8 @@ const AddressChoice: React.FC<AddressChoiceProps> = ({ onAddressSelect }) => {
         formData.append('country', country);
 
         try {
-            const response = await apiService.post('/api/cart/addresses/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+            // When sending FormData, the browser's fetch API adds the correct multipart/form-data header WITH the boundary string automatically.
+            const response = await apiService.post('/api/cart/addresses/', formData);
             if (response && !response.error) {
                 setMsg("ADDRESS RECORDED");
                 handleSnackbarClick();
@@ -174,7 +175,7 @@ const AddressChoice: React.FC<AddressChoiceProps> = ({ onAddressSelect }) => {
                                             type="text"
                                             value={apartmentNumber}
                                             onChange={(e) => setApartmentNumber(e.target.value)}
-                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none"
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none text-black placeholder:text-gray-400"
                                             placeholder="101"
                                             required
                                         />
@@ -185,7 +186,7 @@ const AddressChoice: React.FC<AddressChoiceProps> = ({ onAddressSelect }) => {
                                             type="text"
                                             value={streetAddress}
                                             onChange={(e) => setStreetAddress(e.target.value)}
-                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none"
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none text-black placeholder:text-gray-400"
                                             placeholder="Main St"
                                             required
                                         />
@@ -199,8 +200,8 @@ const AddressChoice: React.FC<AddressChoiceProps> = ({ onAddressSelect }) => {
                                             type="text"
                                             value={city}
                                             onChange={(e) => setCity(e.target.value)}
-                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none"
-                                            placeholder="NY"
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none text-black placeholder:text-gray-400"
+                                            placeholder="City"
                                             required
                                         />
                                     </div>
@@ -210,8 +211,8 @@ const AddressChoice: React.FC<AddressChoiceProps> = ({ onAddressSelect }) => {
                                             type="text"
                                             value={state}
                                             onChange={(e) => setState(e.target.value)}
-                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none"
-                                            placeholder="NY"
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none text-black placeholder:text-gray-400"
+                                            placeholder="ST"
                                             required
                                         />
                                     </div>
@@ -224,7 +225,7 @@ const AddressChoice: React.FC<AddressChoiceProps> = ({ onAddressSelect }) => {
                                             type="text"
                                             value={postalCode}
                                             onChange={(e) => setPostalCode(e.target.value)}
-                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none"
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none text-black placeholder:text-gray-400"
                                             placeholder="10001"
                                             required
                                         />
@@ -235,7 +236,7 @@ const AddressChoice: React.FC<AddressChoiceProps> = ({ onAddressSelect }) => {
                                             type="text"
                                             value={country}
                                             onChange={(e) => setCountry(e.target.value)}
-                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none"
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 focus:border-black outline-none font-mono text-sm transition-colors rounded-none text-black placeholder:text-gray-400"
                                             placeholder="USA"
                                             required
                                         />

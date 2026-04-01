@@ -31,7 +31,7 @@ const apiService = {
         })
     },
 
-    post: async function (url: string, data: any, p0: { headers: { 'Content-Type': string; }; }): Promise<any> {
+    post: async function (url: string, data: any, config: { headers?: Record<string, string> } = {}): Promise<any> {
         console.log('post', url, data);
         const token = await getAccessToken();
 
@@ -41,6 +41,7 @@ const apiService = {
                 body: data,
                 headers: {
                     'Authorization': `Bearer ${token}`,
+                    ...(config.headers || {})
                 }
             })
                 .then(response => response.json())
@@ -55,8 +56,8 @@ const apiService = {
         })
     },
 
-    patch: async function (url: string, data: any, p0: { headers: { 'Content-Type': string; }; }): Promise<any> {
-        console.log('post', url, data);
+    patch: async function (url: string, data: any, config: { headers?: Record<string, string> } = {}): Promise<any> {
+        console.log('patch', url, data);
         const token = await getAccessToken();
 
         return new Promise((resolve, reject) => {
@@ -65,6 +66,7 @@ const apiService = {
                 body: data,
                 headers: {
                     'Authorization': `Bearer ${token}`,
+                    ...(config.headers || {})
                 }
             })
                 .then(response => response.json())

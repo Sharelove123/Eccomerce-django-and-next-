@@ -14,9 +14,32 @@ interface Props {
 
 export default function PrimarySearchAppBar({ userId }: Props) {
   const router = useRouter();
+  const [cartCount, setCartCount] = React.useState(0);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
+
+  // Sync cart count with localStorage
+  const updateCartCount = () => {
+    try {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const total = cart.reduce((acc: number, item: any) => acc + (Number(item.quantity) || 0), 0);
+      setCartCount(total);
+    } catch (e) {
+      setCartCount(0);
+    }
+  };
+
+  React.useEffect(() => {
+    updateCartCount();
+    window.addEventListener('storage', updateCartCount);
+    // Listen for custom 'cartChange' event some components might emit
+    window.addEventListener('cartChange', updateCartCount);
+    return () => {
+      window.removeEventListener('storage', updateCartCount);
+      window.removeEventListener('cartChange', updateCartCount);
+    };
+  }, []);
 
   // Handle scroll for glass effect
   React.useEffect(() => {
@@ -49,9 +72,8 @@ export default function PrimarySearchAppBar({ userId }: Props) {
 
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => router.push('/')}>
-            <span className={`text-2xl font-bold tracking-tighter transition-colors ${
-              isScrolled ? 'bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent' : 'text-white'
-            }`}>
+            <span className={`text-2xl font-bold tracking-tighter transition-colors ${isScrolled ? 'bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent' : 'text-white'
+              }`}>
               ECCOMERCE
             </span>
           </div>
@@ -62,9 +84,8 @@ export default function PrimarySearchAppBar({ userId }: Props) {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`transition-colors font-medium text-sm lg:text-base ${
-                  isScrolled ? 'text-foreground/80 hover:text-primary' : 'text-white/90 hover:text-white'
-                }`}
+                className={`transition-colors font-medium text-sm lg:text-base ${isScrolled ? 'text-foreground/80 hover:text-primary' : 'text-white/90 hover:text-white'
+                  }`}
               >
                 {link.name}
               </Link>
@@ -73,6 +94,19 @@ export default function PrimarySearchAppBar({ userId }: Props) {
 
           {/* User Actions */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Cart Link with Counter */}
+            <Link
+              href="/cart"
+              className={`p-2 rounded-full transition-colors relative group ${isScrolled ? 'hover:bg-muted text-foreground' : 'hover:bg-white/10 text-white'}`}
+            >
+              <ShoppingCart />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-none border border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+
             {userId ? (
               <div className="relative">
                 <button
@@ -94,10 +128,17 @@ export default function PrimarySearchAppBar({ userId }: Props) {
                     <Link href="/profile" className="block px-4 py-2 text-sm hover:bg-muted text-foreground/80">
                       Profile
                     </Link>
-                    <Link href="/cart" className="block px-4 py-2 text-sm hover:bg-muted text-foreground/80">
+                    <Link href="/cart" className="block px-4 py-2 text-sm hover:bg-muted text-foreground/80 group">
                       <div className="flex items-center justify-between">
                         <span>Cart</span>
-                        <ShoppingCart fontSize="small" className="text-primary" />
+                        <div className="relative">
+                          <ShoppingCart fontSize="small" className="text-primary" />
+                          {cartCount > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-black text-white text-[8px] w-4 h-4 flex items-center justify-center rounded-none border border-white">
+                              {cartCount}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </Link>
                     <Link href="/orderList" className="block px-4 py-2 text-sm hover:bg-muted text-foreground/80">
@@ -118,9 +159,8 @@ export default function PrimarySearchAppBar({ userId }: Props) {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => router.push('/signin')}
-                  className={`text-sm font-medium px-4 py-2 transition-colors ${
-                    isScrolled ? 'text-foreground/70 hover:text-primary' : 'text-white/80 hover:text-white'
-                  }`}
+                  className={`text-sm font-medium px-4 py-2 transition-colors ${isScrolled ? 'text-foreground/70 hover:text-primary' : 'text-white/80 hover:text-white'
+                    }`}
                 >
                   Log In
                 </button>
@@ -135,12 +175,23 @@ export default function PrimarySearchAppBar({ userId }: Props) {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center space-x-2">
+            {/* Mobile Cart Counter */}
+            <Link
+              href="/cart"
+              className={`p-2 transition-colors relative ${isScrolled ? 'text-foreground' : 'text-white'}`}
+            >
+              <ShoppingCart />
+              {cartCount > 0 && (
+                <span className="absolute top-1 right-1 bg-black text-white text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-none border border-white">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`p-2 rounded-md transition-colors ${
-                isScrolled ? 'text-foreground/80 hover:bg-muted' : 'text-white hover:bg-white/10'
-              }`}
+              className={`p-2 rounded-md transition-colors ${isScrolled ? 'text-foreground/80 hover:bg-muted' : 'text-white hover:bg-white/10'
+                }`}
             >
               {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
             </button>
