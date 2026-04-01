@@ -6,7 +6,7 @@ export default function CareersPage() {
       <h1 className="text-4xl font-extrabold tracking-tight mb-8">Careers</h1>
       <div className="prose prose-lg dark:prose-invert">
         <p className="text-xl text-slate-500 mb-8">
-          Join our mission to revolutionize the digital retail space. We're looking for passionate individuals who love pushing the boundaries of technology.
+          Join our mission to revolutionize the digital retail space. We&apos;re looking for passionate individuals who love pushing the boundaries of technology.
         </p>
         <h2 className="text-2xl font-bold mt-12 mb-4">Open Positions</h2>
         
@@ -23,8 +23,8 @@ export default function CareersPage() {
         </div>
 
         <div className="mt-12 p-8 bg-slate-50 dark:bg-slate-900 rounded-xl text-center">
-          <h3 className="text-xl font-bold mb-2">Don't see a fit?</h3>
-          <p className="text-slate-500">Send your resume to careers@eccomerce.com and we'll keep you in mind for future roles.</p>
+          <h3 className="text-xl font-bold mb-2">Don&apos;t see a fit?</h3>
+          <p className="text-slate-500">Send your resume to careers@eccomerce.com and we&apos;ll keep you in mind for future roles.</p>
         </div>
       </div>
     </div>

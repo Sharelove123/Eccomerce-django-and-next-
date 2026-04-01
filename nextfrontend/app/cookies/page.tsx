@@ -11,12 +11,12 @@ export default function CookiesPage() {
 
         <h2 className="text-2xl font-bold mt-12 mb-4">Authentication Cookies</h2>
         <p className="mb-6">
-          We utilize HttpOnly, strict-domain Cookies via Next.js server actions to securely maintain your authentication state across the application without unnecessarily exposing tokens to the browser's JavaScript context. 
+          We utilize HttpOnly, strict-domain Cookies via Next.js server actions to securely maintain your authentication state across the application without unnecessarily exposing tokens to the browser&apos;s JavaScript context. 
         </p>
 
         <h2 className="text-2xl font-bold mt-12 mb-4">Session Management</h2>
         <p className="mb-6">
-          If you wish to terminate these cookies, simply select the 'Sign Out' option situated within the primary navigation menu. This will sever the connection and wipe the active JWT tokens.
+          If you wish to terminate these cookies, simply select the &apos;Sign Out&apos; option situated within the primary navigation menu. This will sever the connection and wipe the active JWT tokens.
         </p>
 
       </div>

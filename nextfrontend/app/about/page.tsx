@@ -14,7 +14,7 @@ export default function AboutPage() {
         </p>
         <h2 className="text-2xl font-bold mt-12 mb-4">The Team</h2>
         <p className="mb-6">
-          Behind our digital storefront is a team of passionate engineers, designers, and e-commerce veterans dedicated to building the future of retail. While this specific instance serves as an educational portfolio showcase, it perfectly mirrors the complex architecture and beautiful design standards demanded by today's leading brands.
+          Behind our digital storefront is a team of passionate engineers, designers, and e-commerce veterans dedicated to building the future of retail. While this specific instance serves as an educational portfolio showcase, it perfectly mirrors the complex architecture and beautiful design standards demanded by today&apos;s leading brands.
         </p>
       </div>
     </div>
