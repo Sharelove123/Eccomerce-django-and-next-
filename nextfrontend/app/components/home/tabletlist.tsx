@@ -42,7 +42,7 @@ const TabletList = () => {
                         tablets.map((product: Product, index: number) => {
                             return (
                                 <div key={index} className="flex-shrink-0 snap-start w-84 h-46">
-                                    <img src={product.imagelist.img1} className=" h-full object-contain cursor-pointer" onClick={()=>{
+                                    <img src={product.imagelist?.img1 || `https://picsum.photos/seed/product${product.id}/400/400`} className=" h-full object-contain cursor-pointer" onClick={()=>{
                                         router.push(`/product/${product.id}`);
                                     }} />
                                 </div>

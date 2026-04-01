@@ -89,12 +89,10 @@ function OrderItemListPage() {
                             {orderItemList.map((item) => (
                                 <div key={item.id} className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:bg-muted/5 transition-colors">
                                     <div className="h-20 w-20 relative flex-shrink-0 bg-white rounded-xl border border-border overflow-hidden">
-                                        <Image
-                                            src={item.product.imagelist.img1}
+                                        <img
+                                            src={item.product.imagelist?.img1 || `https://picsum.photos/seed/product${item.product.id}/400/400`}
                                             alt={item.product.title}
-                                            fill
-                                            className="object-contain p-2"
-                                            sizes="80px"
+                                            className="object-contain p-2 w-full h-full"
                                         />
                                     </div>
                                     <div className="flex-grow">

@@ -21,7 +21,7 @@ const ProductCard: React.FC<cartItemProps> = ({ cartItem, removeFromCart, update
         setproductQuantity(Number(cartItem.quantity));
     }, [cartItem.quantity])
 
-    const image = cartItem.product.imagelist.img1;
+    const image = cartItem.product.imagelist?.img1 || `https://picsum.photos/seed/product${cartItem.product.id}/400/400`;
     const price = cartItem.product.discountedPrice || cartItem.product.orginalPrice;
     const total = price ? price * productQuantity : 0;
 

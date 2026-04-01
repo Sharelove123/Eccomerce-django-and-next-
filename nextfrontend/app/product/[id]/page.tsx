@@ -36,6 +36,8 @@ export default function ProductDetail() {
                     setProduct(response);
                     if (response.imagelist) {
                         setselectedImage(response.imagelist.img1);
+                    } else {
+                        setselectedImage(`https://picsum.photos/seed/product${id}a/600/600`);
                     }
                 } catch (error) {
                     console.error('Error fetching product:', error);
