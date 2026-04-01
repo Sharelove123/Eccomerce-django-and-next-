@@ -28,6 +28,9 @@ export default async function RootLayout({
             {children}
         </main>
         <Footer />
+        <div className="fixed bottom-0 left-0 w-full bg-yellow-400 text-black text-center py-2 text-sm font-bold z-[9999] shadow-[0_-4px_6px_rgba(0,0,0,0.1)]">
+          ⚠️ STUDENT PROJECT SHOWCASE: This is not a real store. Please do not make any real purchases or enter actual payment information.
+        </div>
       </body>
     </html>
   );
