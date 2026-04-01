@@ -53,19 +53,11 @@ export default function Category() {
 
     const categories = [
         "All",
-        "watch",
-        "Laptop",
-        "Desktop Computer",
-        "Tablet",
-        "Television",
-        "Headphones",
-        "Shirts",
-        "Jeans",
-        "Suits",
-        "Leggings",
-        "Sandals",
-        "Shoes",
-        "High Heels"
+        "Electronics",
+        "Clothing",
+        "Home & Kitchen",
+        "Beauty",
+        "Sports"
     ];
 
     return (

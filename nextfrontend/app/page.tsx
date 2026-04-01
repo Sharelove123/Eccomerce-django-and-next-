@@ -55,14 +55,9 @@ export default function Home() {
       {/* Featured Categories (Optional, or just jump to lists) - Let's jump to lists for now */}
 
       <div className="space-y-12 mt-12">
-        {/* Watch List */}
-        <ProductList title="Trending Watches" category="watch" />
-
-        {/* Tablet List */}
-        <ProductList title="Top Rated Tablets" category="Tablet" />
-
-        {/* Laptop List */}
-        <ProductList title="High Performance Laptops" category="Laptop" />
+        <ProductList title="Latest Electronics" category="Electronics" />
+        <ProductList title="Trending Clothing" category="Clothing" />
+        <ProductList title="Home & Kitchen Essentials" category="Home & Kitchen" />
       </div>
 
     </div>
