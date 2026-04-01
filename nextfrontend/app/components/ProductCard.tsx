@@ -19,7 +19,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             {/* Image Container */}
             <div className="relative h-48 w-full bg-muted flex items-center justify-center p-4 overflow-hidden">
                 <img
-                    src={product.imagelist.img1}
+                    src={product.imagelist?.img1 || '/placeholder.png'}
                     alt={product.title || "Product Image"} // Assuming Product type has title, if not fallback
                     className="h-full w-full object-contain group-hover:scale-110 transition-transform duration-500"
                 />

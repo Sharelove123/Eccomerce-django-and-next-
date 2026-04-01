@@ -35,7 +35,7 @@ export default function Home() {
             </p>
             <div className="flex space-x-4">
               <Link
-                href="/products"
+                href="/categories/?name=All"
                 className="px-8 py-4 bg-primary hover:bg-primary/90 text-white rounded-full font-semibold transition-all transform hover:scale-105 shadow-lg shadow-primary/25 flex items-center space-x-2"
               >
                 <span>Shop Now</span>

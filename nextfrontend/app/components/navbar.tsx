@@ -35,9 +35,8 @@ export default function PrimarySearchAppBar({ userId }: Props) {
 
   const navLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Products', href: '/products' }, // Assuming this route exists or will exist
-    { name: 'Categories', href: '/categories/?name=All' },
-    { name: 'Contact', href: '/contact' },
+    { name: 'Products', href: '/categories/?name=All' },
+    { name: 'Contact', href: '/contactus' },
   ];
 
   return (
