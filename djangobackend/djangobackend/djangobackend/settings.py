@@ -146,14 +146,19 @@ ASGI_APPLICATION = 'djangobackend.asgi.application'
 import dj_database_url
 from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
 
+# Safely get and clean the URL for the production pooler
 db_url = os.environ.get("DATABASE_URL")
 if db_url:
-    # Strip ?pgbouncer=true if present as psycopg2 (Django's driver) doesn't recognize it
-    parsed = urlparse(db_url)
-    query = parse_qs(parsed.query)
-    query.pop('pgbouncer', None)
-    new_query = urlencode(query, doseq=True)
-    db_url = urlunparse(parsed._replace(query=new_query))
+    try:
+        parsed = urlparse(db_url)
+        query = parse_qs(parsed.query)
+        # Strip pgbouncer because psycopg2 (Django's driver) doesn't recognize it
+        query.pop('pgbouncer', None)
+        new_query = urlencode(query, doseq=True)
+        db_url = urlunparse(parsed._replace(query=new_query))
+    except Exception:
+        # If parsing fails for any reason, use the original URL
+        db_url = os.environ.get("DATABASE_URL")
 
 DATABASES = {
     'default': dj_database_url.config(
@@ -162,6 +167,13 @@ DATABASES = {
         conn_health_checks=True,
     )
 } 
+
+# Local development fallback (SQLite)
+if not DATABASES.get('default') or not DATABASES['default'].get('ENGINE'):
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
+    }
 # If DATABASE_URL not found (local dev without it), fallback or it stays empty/default.
 # Actually, let's keep the manual fallback if user wants to use SQL_ env vars locally or if DATABASE_URL is missing.
 if not DATABASES['default']:
