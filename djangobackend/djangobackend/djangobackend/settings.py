@@ -21,7 +21,11 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+# ALLOWED_HOSTS for Render and local development
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0").split(",")
+# Automatically allow Render domains if in production
+if not DEBUG:
+    ALLOWED_HOSTS.append('*')
 
 AUTH_USER_MODEL = 'useraccount.User'
 
@@ -41,8 +45,8 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKEN": False,
     "BLACKLIST_AFTER_ROTATION": False,
     "UPDATE_LAST_LOGIN": True,
-    "SIGNING_KEY": os.environ.get("SIGNING_KEY"),
-    "ALOGRIGTHM": "HS512",
+    "SIGNING_KEY": os.environ.get("SIGNING_KEY", SECRET_KEY),
+    "ALGORITHM": "HS512",
 }
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
@@ -60,18 +64,26 @@ REST_FRAMEWORK = {
     )
 }
 
+# Dynamic CORS and CSRF Origins
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
-
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "http://localhost:3000").split(",")
 
-CORS_ORIGINS_WHITELIST = os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
-
-CORS_ALLOW_ALL_ORIGINS = True
+# Add common pattern matches for Render and Vercel
+if not DEBUG:
+    # Allow all subdomains of onrender and vercel for convenience in staging
+    CORS_ALLOW_ALL_ORIGINS = True
+    CSRF_TRUSTED_ORIGINS += ["https://*.onrender.com", "https://*.vercel.app"]
+else:
+    CORS_ALLOW_ALL_ORIGINS = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 REST_AUTH = {
     "USE_JWT": True,
-    "JWT_AUTH_HTTPONLY": False
+    "JWT_AUTH_HTTPONLY": False,
+}
+
+REST_AUTH_SERIALIZERS = {
+    'LOGIN_SERIALIZER': 'useraccount.serializers.CustomLoginSerializer',
 }
 
 # Application definition
