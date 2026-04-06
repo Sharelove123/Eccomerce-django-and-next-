@@ -3,10 +3,18 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { resetAuthCookies } from '../lib/actions';
-import { ShoppingCart, Person, Menu as MenuIcon, Close as CloseIcon, Logout, ShoppingBag } from '@mui/icons-material';
+import {
+  ShoppingCart,
+  Person,
+  Menu as MenuIcon,
+  Close as CloseIcon,
+  Logout,
+  ShoppingBag,
+  Forum,
+} from '@mui/icons-material';
 import Link from 'next/link';
-// We will replace the external drawer with an internal Tailwind one for better coherence
-// import SwipeableTemporaryDrawer from './drawermoble'; 
+import apiService from '../services/apiService';
+import { VendorStatus } from '../utils/types';
 
 interface Props {
   userId: string | null;
@@ -18,14 +26,14 @@ export default function PrimarySearchAppBar({ userId }: Props) {
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
+  const [vendorStatus, setVendorStatus] = React.useState<VendorStatus | null>(null);
 
-  // Sync cart count with localStorage
   const updateCartCount = () => {
     try {
       const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      const total = cart.reduce((acc: number, item: any) => acc + (Number(item.quantity) || 0), 0);
+      const total = cart.reduce((acc: number, item: { quantity?: number }) => acc + (Number(item.quantity) || 0), 0);
       setCartCount(total);
-    } catch (e) {
+    } catch {
       setCartCount(0);
     }
   };
@@ -33,7 +41,6 @@ export default function PrimarySearchAppBar({ userId }: Props) {
   React.useEffect(() => {
     updateCartCount();
     window.addEventListener('storage', updateCartCount);
-    // Listen for custom 'cartChange' event some components might emit
     window.addEventListener('cartChange', updateCartCount);
     return () => {
       window.removeEventListener('storage', updateCartCount);
@@ -41,11 +48,31 @@ export default function PrimarySearchAppBar({ userId }: Props) {
     };
   }, []);
 
-  // Handle scroll for glass effect
   React.useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+    if (!userId) {
+      setVendorStatus(null);
+      return;
+    }
+
+    const fetchVendorStatus = async () => {
+      try {
+        const response = await apiService.get('/api/vendor/status/');
+        if (response && typeof response.is_vendor === 'boolean') {
+          setVendorStatus(response);
+          return;
+        }
+      } catch {
+        // keep null
+      }
+
+      setVendorStatus(null);
     };
+
+    fetchVendorStatus();
+  }, [userId]);
+
+  React.useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -62,46 +89,55 @@ export default function PrimarySearchAppBar({ userId }: Props) {
     { name: 'Contact', href: '/contactus' },
   ];
 
+  const messagesHref = vendorStatus?.is_vendor ? '/vendor/chats' : '/messages';
+
   return (
-    <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white/70 backdrop-blur-md shadow-sm dark:bg-slate-900/70' : 'bg-transparent'
+    <nav className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-6">
+      <div
+        className={`mx-auto max-w-7xl rounded-[1.75rem] border transition-all duration-300 ${
+          isScrolled
+            ? 'border-[rgba(216,204,187,0.9)] bg-[rgba(255,252,247,0.82)] shadow-[0_18px_50px_rgba(15,23,42,0.09)] backdrop-blur-xl'
+            : 'border-[rgba(255,255,255,0.18)] bg-[linear-gradient(135deg,rgba(20,26,34,0.88),rgba(52,39,25,0.62))] shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-xl'
         }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+      >
+        <div className="flex h-20 items-center justify-between px-5 sm:px-7">
+          <button
+            onClick={() => router.push('/')}
+            className="flex items-center gap-3 text-left"
+          >
+            <div className={`flex h-11 w-11 items-center justify-center rounded-2xl border ${isScrolled ? 'border-black/10 bg-white text-slate-900' : 'border-white/15 bg-white/10 text-white'}`}>
+              <ShoppingBag fontSize="small" />
+            </div>
+            <div>
+              <p className={`eyebrow ${isScrolled ? 'text-slate-500' : 'text-white/60'}`}>Curated goods</p>
+              <p className={`text-xl font-semibold tracking-[0.08em] ${isScrolled ? 'text-slate-950' : 'text-white'}`}>ECCOMERCE</p>
+            </div>
+          </button>
 
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => router.push('/')}>
-            <span className={`text-2xl font-bold tracking-tighter transition-colors ${isScrolled ? 'bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent' : 'text-white'
-              }`}>
-              ECCOMERCE
-            </span>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-8 items-center">
+          <div className="hidden md:flex items-center gap-7">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className={`transition-colors font-medium text-sm lg:text-base ${isScrolled ? 'text-foreground/80 hover:text-primary' : 'text-white/90 hover:text-white'
-                  }`}
+                className={`text-sm font-semibold tracking-[0.14em] uppercase transition-colors ${
+                  isScrolled ? 'text-slate-700 hover:text-slate-950' : 'text-white/78 hover:text-white'
+                }`}
               >
                 {link.name}
               </Link>
             ))}
           </div>
 
-          {/* User Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            {/* Cart Link with Counter */}
+          <div className="hidden md:flex items-center gap-3">
             <Link
               href="/cart"
-              className={`p-2 rounded-full transition-colors relative group ${isScrolled ? 'hover:bg-muted text-foreground' : 'hover:bg-white/10 text-white'}`}
+              className={`relative flex h-11 w-11 items-center justify-center rounded-2xl border transition ${
+                isScrolled ? 'border-black/10 bg-white text-slate-900 hover:bg-slate-50' : 'border-white/15 bg-white/10 text-white hover:bg-white/15'
+              }`}
             >
-              <ShoppingCart />
+              <ShoppingCart fontSize="small" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-none border border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] font-bold text-white">
                   {cartCount}
                 </span>
               )}
@@ -110,44 +146,38 @@ export default function PrimarySearchAppBar({ userId }: Props) {
             {userId ? (
               <div className="relative">
                 <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center space-x-2 p-2 rounded-full hover:bg-muted transition-colors"
+                  onClick={() => setUserMenuOpen((current) => !current)}
+                  className={`flex items-center gap-3 rounded-2xl border px-4 py-2.5 transition ${
+                    isScrolled ? 'border-black/10 bg-white text-slate-900 hover:bg-slate-50' : 'border-white/15 bg-white/10 text-white hover:bg-white/15'
+                  }`}
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <span className={`flex h-8 w-8 items-center justify-center rounded-full ${isScrolled ? 'bg-[rgba(184,131,71,0.14)] text-[var(--secondary)]' : 'bg-white/15 text-white'}`}>
                     <Person fontSize="small" />
-                  </div>
-                  <span className={`text-sm font-medium ${isScrolled ? 'text-foreground' : 'text-white'}`}>Account</span>
+                  </span>
+                  <span className="text-sm font-semibold tracking-[0.12em] uppercase">Account</span>
                 </button>
 
-                {/* Dropdown User Menu */}
                 {userMenuOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-border py-2 animate-in fade-in slide-in-from-top-5 duration-200 z-[100]"
+                    className="premium-panel absolute right-0 mt-3 w-60 rounded-[1.5rem] p-2 text-sm text-slate-700"
                     onMouseLeave={() => setUserMenuOpen(false)}
                   >
-                    <Link href="/profile" className="block px-4 py-2 text-sm hover:bg-muted text-foreground/80">
-                      Profile
+                    <Link href="/profile" className="block rounded-xl px-4 py-3 hover:bg-black/[0.04]">Profile</Link>
+                    <Link href="/cart" className="block rounded-xl px-4 py-3 hover:bg-black/[0.04]">Cart</Link>
+                    <Link href="/orderList" className="block rounded-xl px-4 py-3 hover:bg-black/[0.04]">Orders</Link>
+                    <Link href={messagesHref} className="block rounded-xl px-4 py-3 hover:bg-black/[0.04]">
+                      {vendorStatus?.is_vendor ? 'Vendor Chats' : 'Messages'}
                     </Link>
-                    <Link href="/cart" className="block px-4 py-2 text-sm hover:bg-muted text-foreground/80 group">
-                      <div className="flex items-center justify-between">
-                        <span>Cart</span>
-                        <div className="relative">
-                          <ShoppingCart fontSize="small" className="text-primary" />
-                          {cartCount > 0 && (
-                            <span className="absolute -top-2 -right-2 bg-black text-white text-[8px] w-4 h-4 flex items-center justify-center rounded-none border border-white">
-                              {cartCount}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                    <Link
+                      href={vendorStatus?.is_vendor ? '/vendor/dashboard' : '/vendor/register'}
+                      className="block rounded-xl px-4 py-3 hover:bg-black/[0.04]"
+                    >
+                      {vendorStatus?.is_vendor ? 'Vendor Dashboard' : 'Become a Seller'}
                     </Link>
-                    <Link href="/orderList" className="block px-4 py-2 text-sm hover:bg-muted text-foreground/80">
-                      Orders
-                    </Link>
-                    <div className="h-px bg-border my-1"></div>
+                    <div className="my-2 h-px bg-black/8" />
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center space-x-2"
+                      className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-red-600 hover:bg-red-50"
                     >
                       <Logout fontSize="small" />
                       <span>Logout</span>
@@ -156,42 +186,41 @@ export default function PrimarySearchAppBar({ userId }: Props) {
                 )}
               </div>
             ) : (
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => router.push('/signin')}
-                  className={`text-sm font-medium px-4 py-2 transition-colors ${isScrolled ? 'text-foreground/70 hover:text-primary' : 'text-white/80 hover:text-white'
-                    }`}
+              <>
+                <Link
+                  href="/signin"
+                  className={`rounded-full px-4 py-2.5 text-sm font-semibold tracking-[0.12em] uppercase ${
+                    isScrolled ? 'text-slate-700 hover:text-slate-950' : 'text-white/78 hover:text-white'
+                  }`}
                 >
                   Log In
-                </button>
-                <button
-                  onClick={() => router.push('/signup')}
-                  className="text-sm font-medium px-4 py-2 bg-primary text-primary-foreground rounded-full shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all hover:scale-105 active:scale-95"
-                >
-                  Sign Up
-                </button>
-              </div>
+                </Link>
+                <Link href="/signup" className="premium-button rounded-full px-5 py-2.5 text-sm font-semibold tracking-[0.12em] uppercase">
+                  Join Now
+                </Link>
+              </>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-2">
-            {/* Mobile Cart Counter */}
+          <div className="md:hidden flex items-center gap-2">
             <Link
               href="/cart"
-              className={`p-2 transition-colors relative ${isScrolled ? 'text-foreground' : 'text-white'}`}
+              className={`relative flex h-11 w-11 items-center justify-center rounded-2xl border ${
+                isScrolled ? 'border-black/10 bg-white text-slate-900' : 'border-white/15 bg-white/10 text-white'
+              }`}
             >
-              <ShoppingCart />
+              <ShoppingCart fontSize="small" />
               {cartCount > 0 && (
-                <span className="absolute top-1 right-1 bg-black text-white text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-none border border-white">
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] font-bold text-white">
                   {cartCount}
                 </span>
               )}
             </Link>
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`p-2 rounded-md transition-colors ${isScrolled ? 'text-foreground/80 hover:bg-muted' : 'text-white hover:bg-white/10'
-                }`}
+              onClick={() => setMobileMenuOpen((current) => !current)}
+              className={`flex h-11 w-11 items-center justify-center rounded-2xl border ${
+                isScrolled ? 'border-black/10 bg-white text-slate-900' : 'border-white/15 bg-white/10 text-white'
+              }`}
             >
               {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
             </button>
@@ -199,50 +228,54 @@ export default function PrimarySearchAppBar({ userId }: Props) {
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-20 left-0 w-full bg-background/95 backdrop-blur-xl border-b border-border shadow-xl animate-in slide-in-from-top-5 duration-200">
-          <div className="px-4 py-6 space-y-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-lg font-medium text-foreground/80 hover:text-primary"
-              >
-                {link.name}
-              </Link>
-            ))}
-            <div className="h-px bg-border my-4"></div>
+        <div className="mx-auto mt-3 max-w-7xl px-1 md:hidden">
+          <div className="premium-panel rounded-[1.75rem] p-5">
+            <div className="space-y-2">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block rounded-xl px-4 py-3 text-sm font-semibold tracking-[0.12em] uppercase text-slate-700 hover:bg-black/[0.04]"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+            <div className="my-4 h-px bg-black/10" />
             {userId ? (
-              <div className="space-y-3">
-                <Link href="/profile" className="flex items-center space-x-3 text-foreground/80" onClick={() => setMobileMenuOpen(false)}>
-                  <Person className="text-primary" /> <span>Profile</span>
+              <div className="space-y-2">
+                <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 hover:bg-black/[0.04]">
+                  <Person fontSize="small" /> <span>Profile</span>
                 </Link>
-                <Link href="/cart" className="flex items-center space-x-3 text-foreground/80" onClick={() => setMobileMenuOpen(false)}>
-                  <ShoppingCart className="text-secondary" /> <span>Cart</span>
+                <Link href="/orderList" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 hover:bg-black/[0.04]">
+                  <ShoppingBag fontSize="small" /> <span>Orders</span>
                 </Link>
-                <Link href="/orderList" className="flex items-center space-x-3 text-foreground/80" onClick={() => setMobileMenuOpen(false)}>
-                  <ShoppingBag className="text-blue-500" /> <span>Orders</span>
+                <Link href={messagesHref} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 hover:bg-black/[0.04]">
+                  <Forum fontSize="small" /> <span>{vendorStatus?.is_vendor ? 'Vendor Chats' : 'Messages'}</span>
                 </Link>
-                <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="flex items-center space-x-3 text-red-500">
-                  <Logout /> <span>Logout</span>
+                <Link
+                  href={vendorStatus?.is_vendor ? '/vendor/dashboard' : '/vendor/register'}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 hover:bg-black/[0.04]"
+                >
+                  <ShoppingBag fontSize="small" />
+                  <span>{vendorStatus?.is_vendor ? 'Vendor Dashboard' : 'Become a Seller'}</span>
+                </Link>
+                <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-red-600 hover:bg-red-50">
+                  <Logout fontSize="small" />
+                  <span>Logout</span>
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col space-y-3">
-                <button
-                  onClick={() => { router.push('/signin'); setMobileMenuOpen(false); }}
-                  className="w-full py-3 border border-border rounded-xl font-medium"
-                >
+              <div className="grid gap-3">
+                <Link href="/signin" onClick={() => setMobileMenuOpen(false)} className="premium-outline rounded-full px-5 py-3 text-center text-sm font-semibold tracking-[0.12em] uppercase">
                   Log In
-                </button>
-                <button
-                  onClick={() => { router.push('/signup'); setMobileMenuOpen(false); }}
-                  className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium shadow-lg shadow-primary/20"
-                >
-                  Sign Up
-                </button>
+                </Link>
+                <Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="premium-button rounded-full px-5 py-3 text-center text-sm font-semibold tracking-[0.12em] uppercase">
+                  Join Now
+                </Link>
               </div>
             )}
           </div>
