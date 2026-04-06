@@ -3,12 +3,12 @@
 import SimpleSnackbar from '@/app/components/snackbar';
 import apiService from '@/app/services/apiService';
 import { Product } from '@/app/utils/types';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
-import { Lilita_One, Abril_Fatface } from "next/font/google";
 
-const lilita_One = Lilita_One({ weight: '400', subsets: ['latin'] });
-const abril_Fatface = Abril_Fatface({ weight: '400', subsets: ['latin'] });
+const priceFontClass = 'font-black tracking-tight';
+const titleFontClass = 'font-serif';
 
 export default function ProductDetail() {
     const { id } = useParams();
@@ -164,7 +164,7 @@ export default function ProductDetail() {
                                     <span className="inline-block px-4 py-1.5 rounded-full text-sm font-bold bg-indigo-50 text-indigo-600 tracking-wide uppercase mb-4 shadow-sm border border-indigo-100">
                                         {product.category?.name || "Collection"}
                                     </span>
-                                    <h1 className={`${abril_Fatface.className} text-4xl md:text-5xl lg:text-6xl text-slate-900 leading-tight mb-4`}>
+                                    <h1 className={`${titleFontClass} text-4xl md:text-5xl lg:text-6xl text-slate-900 leading-tight mb-4`}>
                                         {product.title}
                                     </h1>
 
@@ -183,7 +183,7 @@ export default function ProductDetail() {
 
                                 {/* Price Block */}
                                 <div className="flex items-baseline gap-4">
-                                    <span className={`text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-pink-600 ${lilita_One.className}`}>
+                                    <span className={`text-5xl bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-pink-600 ${priceFontClass}`}>
                                         ${product.discountedPrice || product.orginalPrice}
                                     </span>
                                     {(product.discountedPrice && product.discountedPrice !== product.orginalPrice) && (
@@ -212,6 +212,43 @@ export default function ProductDetail() {
                                         </button>
                                     )}
                                 </div>
+
+                                {product.vendor && (
+                                    <div className="rounded-[2rem] border border-slate-200 bg-white/80 p-5">
+                                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Sold by</p>
+                                        <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-slate-100">
+                                                    {product.vendor.store_logo ? (
+                                                        <img src={product.vendor.store_logo} alt={product.vendor.store_name} className="h-full w-full object-cover" />
+                                                    ) : (
+                                                        <span className="text-lg font-bold text-slate-500">
+                                                            {product.vendor.store_name.slice(0, 1)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <p className="text-lg font-bold text-slate-900">{product.vendor.store_name}</p>
+                                                    <p className="text-sm text-slate-500">Message the vendor before or after purchase.</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-wrap gap-3">
+                                                <Link
+                                                    href={`/store/${product.vendor.slug}`}
+                                                    className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+                                                >
+                                                    Visit store
+                                                </Link>
+                                                <Link
+                                                    href={`/messages?vendor=${product.vendor.id}&product=${product.id}`}
+                                                    className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                                                >
+                                                    Chat with vendor
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Actions Base */}
                                 <div className="pt-4 space-y-6">
