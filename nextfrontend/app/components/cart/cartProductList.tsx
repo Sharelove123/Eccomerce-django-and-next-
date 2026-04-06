@@ -5,10 +5,9 @@ import { useEffect, useState } from 'react';
 import ProductCard from './productCard';
 import SimpleSnackbar from '../snackbar';
 import Link from 'next/link';
-import { Lilita_One, JetBrains_Mono } from "next/font/google";
 
-const lilita_One = Lilita_One({ weight: '400', subsets: ['latin'] });
-const mono = JetBrains_Mono({ subsets: ['latin'] });
+const displayFontClass = 'font-black tracking-tight';
+const monoClass = 'font-mono';
 
 interface CartProductListProps {
     onCartChange: () => void;
@@ -64,10 +63,10 @@ const CartProductList: React.FC<CartProductListProps> = ({ onCartChange }) => {
     if (cartItems.length === 0) {
         return (
             <div className="w-full flex flex-col items-center justify-center py-24 border-2 border-dashed border-gray-300 bg-gray-50/50">
-                <h3 className={`text-4xl md:text-6xl font-black text-black uppercase mb-4 tracking-tighter ${lilita_One.className}`}>
+                <h3 className={`text-4xl md:text-6xl text-black uppercase mb-4 tracking-tighter ${displayFontClass}`}>
                     Cart Void
                 </h3>
-                <p className={`text-gray-500 mb-8 uppercase tracking-widest text-xs md:text-sm ${mono.className}`}>
+                <p className={`text-gray-500 mb-8 uppercase tracking-widest text-xs md:text-sm ${monoClass}`}>
                     0 Items Detected // Initialization Required
                 </p>
                 <Link href="/" className="bg-black text-white px-8 py-4 font-bold uppercase tracking-widest hover:bg-white hover:text-black border-2 border-black transition-all hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
@@ -80,10 +79,10 @@ const CartProductList: React.FC<CartProductListProps> = ({ onCartChange }) => {
     return (
         <div className='w-full'>
             <div className="flex items-end justify-between border-b-4 border-black pb-4 mb-8">
-                <h2 className={`text-4xl font-black text-black uppercase tracking-tighter leading-none ${lilita_One.className}`}>
+                <h2 className={`text-4xl text-black uppercase tracking-tighter leading-none ${displayFontClass}`}>
                     Inventory
                 </h2>
-                <div className={`bg-black text-white px-3 py-1 font-bold text-sm select-none ${mono.className}`}>
+                <div className={`bg-black text-white px-3 py-1 font-bold text-sm select-none ${monoClass}`}>
                     COUNT: {cartItems.length}
                 </div>
             </div>

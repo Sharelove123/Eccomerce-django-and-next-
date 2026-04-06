@@ -5,13 +5,10 @@ import { useEffect, useState } from "react";
 import React from "react";
 import apiService from "@/app/services/apiService";
 import { useRouter } from "next/navigation";
-import { getUserId } from "@/app/lib/actions";
 import SimpleSnackbar from "../snackbar";
 import PayPalButton from "../payment/paypalbutton";
-import { JetBrains_Mono, Bungee } from "next/font/google";
 
-const mono = JetBrains_Mono({ subsets: ['latin'] });
-const bungee = Bungee({ weight: '400', subsets: ['latin'] });
+const monoClass = 'font-mono';
 
 interface totalPriceProp {
     totalPrice: number,
@@ -31,6 +28,7 @@ const Summary: React.FC<totalPriceProp> = ({ totalPrice, selectedAddress, setSel
     const [open, setOpen] = React.useState(false);
     const [orderId, setOrderId] = React.useState(36);
     const [loading, setLoading] = useState(false);
+    const isSubmittingRef = React.useRef(false);
 
     const router = useRouter();
 
@@ -40,50 +38,61 @@ const Summary: React.FC<totalPriceProp> = ({ totalPrice, selectedAddress, setSel
         setOpen(true);
     };
 
-    const submitOrder = async (details: any) => {
-        const formData = new FormData();
-        const userId = await getUserId();
-        if (!userId) {
-            setErrors((prevErrors) => [...prevErrors, 'USER ID REQUIRED']);
+    const submitOrder = async () => {
+        if (isSubmittingRef.current) {
             return;
         }
 
-        formData.append('user', userId.toString());
-
+        setErrors([]);
+        
         if (!selectedAddress) {
-            setErrors((prevErrors) => [...prevErrors, 'ADDRESS REQUIRED']);
+            setErrors(['address_required_error']);
+            setMsg('ADDRESS REQUIRED');
+            handleClick();
             return;
         }
-
-        formData.append('address', selectedAddress.toString());
-        formData.append('paid', 'True');
 
         const cartItems = JSON.parse(localStorage.getItem('cart') || '[]');
+        if (cartItems.length === 0) {
+            setErrors(['cart_is_empty']);
+            setMsg('CART IS EMPTY');
+            handleClick();
+            return;
+        }
+
         const orderItems = cartItems.map((item: CartItem) => ({
             product: item.product.id,
             quantity: item.quantity,
         }));
 
-        formData.append('order_items', JSON.stringify(orderItems));
+        // Clean JSON payload
+        const payload = {
+            address: selectedAddress,
+            order_items: orderItems,
+        };
 
         try {
+            isSubmittingRef.current = true;
             setLoading(true);
-            const response = await apiService.post('/api/cart/createorder/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
+            const response = await apiService.post(
+                '/api/cart/createorder/',
+                JSON.stringify(payload),
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                 },
-            });
+            );
+            
             if (response.status === 'success') {
                 localStorage.removeItem('cart');
                 setMsg(response.message.toUpperCase());
                 handleClick();
                 onCartChange();
                 setOrderId(response.order_id);
-            }
-            if (response.status === 'failed') {
-                setMsg(response.message.toUpperCase());
+            } else {
+                setMsg(response.message?.toUpperCase() || 'ORDER FAILED');
                 handleClick();
-                router.refresh();
             }
         } catch (error) {
             console.error('Error creating order:', error);
@@ -91,15 +100,12 @@ const Summary: React.FC<totalPriceProp> = ({ totalPrice, selectedAddress, setSel
             handleClick();
         } finally {
             setLoading(false);
+            isSubmittingRef.current = false;
         }
     };
 
-    const handlePaymentSuccess = async (details: any) => {
-        await submitOrder(details);
-        setMsg('PAYMENT VERIFIED');
-        localStorage.removeItem('cart');
-        handleClick();
-        onCartChange();
+    const handlePaymentSuccess = async () => {
+        await submitOrder();
     };
 
     const getAddressDetail = async (addressId: number) => {
@@ -139,7 +145,7 @@ const Summary: React.FC<totalPriceProp> = ({ totalPrice, selectedAddress, setSel
 
                 {/* Header */}
                 <div className="bg-black p-4">
-                    <h3 className={`text-xl text-white uppercase tracking-widest ${mono.className}`}>
+                    <h3 className={`text-xl text-white uppercase tracking-widest ${monoClass}`}>
                         Total_Calculations
                     </h3>
                 </div>
@@ -156,7 +162,7 @@ const Summary: React.FC<totalPriceProp> = ({ totalPrice, selectedAddress, setSel
                     )}
 
                     {/* Cost Breakdown */}
-                    <div className={`space-y-4 ${mono.className}`}>
+                    <div className={`space-y-4 ${monoClass}`}>
                         <div className="flex justify-between items-center text-sm uppercase tracking-wider">
                             <span className="text-gray-500">Subtotal</span>
                             <span className="font-bold text-black">${totalPrice.toFixed(2)}</span>
@@ -179,7 +185,7 @@ const Summary: React.FC<totalPriceProp> = ({ totalPrice, selectedAddress, setSel
                     {/* Total */}
                     <div className="flex justify-between items-end">
                         <span className="text-sm font-bold uppercase tracking-widest text-black">Total Due</span>
-                        <span className={`text-4xl font-black text-black tracking-tight ${mono.className}`}>
+                        <span className={`text-4xl font-black text-black tracking-tight ${monoClass}`}>
                             ${totalPrice.toFixed(2)}
                         </span>
                     </div>
@@ -216,7 +222,7 @@ const Summary: React.FC<totalPriceProp> = ({ totalPrice, selectedAddress, setSel
                             SECURE CHECKOUT
                         </div>
                         <div className="hover:grayscale transition-all duration-300">
-                            <PayPalButton totalPrice={totalPrice} onSuccess={handlePaymentSuccess} />
+                            <PayPalButton totalPrice={totalPrice} onSuccess={handlePaymentSuccess} disabled={loading} />
                         </div>
                     </div>
                 </div>

@@ -5,9 +5,8 @@ import CartProductList from '@/app/components/cart/cartProductList'
 import Summary from '@/app/components/cart/summary'
 import React, { useEffect, useState } from 'react'
 import { CartItem } from '../utils/types';
-import { Abril_Fatface, Oswald } from "next/font/google";
 
-const oswald = Oswald({ subsets: ['latin'] });
+const headlineFontClass = 'font-sans';
 
 export default function Cart() {
   const [selectedAddress, setSelectedAddress] = useState<number>(0)
@@ -38,7 +37,7 @@ export default function Cart() {
 
       {/* Brutalist Header */}
       <div className="container mx-auto px-4 md:px-0 mb-12 border-b-4 border-black pb-8">
-        <h1 className={`${oswald.className} text-7xl md:text-9xl font-black uppercase text-black leading-none tracking-tighter`}>
+        <h1 className={`${headlineFontClass} text-7xl md:text-9xl font-black uppercase text-black leading-none tracking-tighter`}>
           YOUR <br />
           <span className="text-white bg-black px-4 inline-block transform -rotate-1">SELECTION</span>
         </h1>
@@ -64,7 +63,7 @@ export default function Cart() {
                 <div className="flex items-center justify-center w-12 h-12 bg-black text-white font-bold text-xl">
                   02
                 </div>
-                <h2 className={`text-4xl font-bold uppercase tracking-tight text-black ${oswald.className}`}>
+                <h2 className={`text-4xl font-bold uppercase tracking-tight text-black ${headlineFontClass}`}>
                   Shipping Details
                 </h2>
               </div>
