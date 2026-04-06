@@ -1,78 +1,68 @@
 'use client'
 
-import { Facebook, Instagram, Twitter, WhatsApp, X } from '@mui/icons-material';
+import { Facebook, Instagram, LinkedIn, X } from '@mui/icons-material';
 import Link from 'next/link';
 import React from 'react'
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-200 py-12 mt-20 border-t border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-
-          {/* Contact Info */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-white tracking-wider uppercase bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent w-fit">
-              Contact Us
-            </h3>
-            <ul className="space-y-3 text-sm text-slate-400">
-              <li className="flex items-start space-x-2">
-                <span>📍</span>
-                <span>New Delhi, India</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span>📞</span>
-                <span>+91 111 111 1111</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span>✉️</span>
-                <span>support@eccomerce.com</span>
-              </li>
-            </ul>
+    <footer className="mt-20 border-t border-black/10 bg-[linear-gradient(180deg,rgba(24,27,32,0.98),rgba(17,20,25,1))] text-slate-200">
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mb-12 grid gap-8 lg:grid-cols-[1.3fr_0.7fr_0.7fr_0.7fr]">
+          <div className="max-w-md">
+            <p className="eyebrow text-slate-500">Modern Commerce</p>
+            <h2 className="mt-4 text-4xl font-semibold text-white">A cleaner storefront for thoughtful buying.</h2>
+            <p className="mt-4 text-sm leading-7 text-slate-400">
+              Explore considered product collections, direct vendor conversations, and a shopping flow designed to feel composed rather than cluttered.
+            </p>
           </div>
 
-          {/* Website Details */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-white">Explore</h3>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-              <li><Link href="/contactus" className="hover:text-white transition-colors">Contact Us</Link></li>
-              <li><Link href="/careers" className="hover:text-white transition-colors">Careers</Link></li>
-              <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-white">Legal</h3>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:text-white transition-colors">Terms & Conditions</Link></li>
-              <li><Link href="/cookies" className="hover:text-white transition-colors">Cookie Policy</Link></li>
-              <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
-            </ul>
-          </div>
-
-          {/* Social */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-white">Connect</h3>
-            <div className="flex space-x-4">
-              <a href="#" className="p-2 bg-slate-800 rounded-full hover:bg-primary hover:text-white transition-all duration-300 group">
-                <Facebook fontSize="small" className="group-hover:scale-110 transition-transform" />
-              </a>
-              <a href="#" className="p-2 bg-slate-800 rounded-full hover:bg-primary hover:text-white transition-all duration-300 group">
-                <X fontSize="small" className="group-hover:scale-110 transition-transform" />
-              </a>
-              <a href="#" className="p-2 bg-slate-800 rounded-full hover:bg-primary hover:text-white transition-all duration-300 group">
-                <Instagram fontSize="small" className="group-hover:scale-110 transition-transform" />
-              </a>
-              <a href="#" className="p-2 bg-slate-800 rounded-full hover:bg-primary hover:text-white transition-all duration-300 group">
-                <WhatsApp fontSize="small" className="group-hover:scale-110 transition-transform" />
-              </a>
+          <div>
+            <p className="eyebrow text-slate-500">Explore</p>
+            <div className="mt-5 grid gap-3 text-sm text-slate-300">
+              <Link href="/about" className="hover:text-white">About Us</Link>
+              <Link href="/contactus" className="hover:text-white">Contact</Link>
+              <Link href="/categories/?name=All" className="hover:text-white">Products</Link>
+              <Link href="/blog" className="hover:text-white">Journal</Link>
             </div>
-            <p className="text-xs text-slate-500 pt-4">© 2026 Eccomerce Inc. All rights reserved.</p>
           </div>
 
+          <div>
+            <p className="eyebrow text-slate-500">Support</p>
+            <div className="mt-5 grid gap-3 text-sm text-slate-300">
+              <Link href="/help" className="hover:text-white">Help Center</Link>
+              <Link href="/privacy" className="hover:text-white">Privacy</Link>
+              <Link href="/terms" className="hover:text-white">Terms</Link>
+              <Link href="/cookies" className="hover:text-white">Cookies</Link>
+            </div>
+          </div>
+
+          <div>
+            <p className="eyebrow text-slate-500">Connect</p>
+            <div className="mt-5 flex gap-3">
+              {[Facebook, X, Instagram, LinkedIn].map((Icon, index) => (
+                <a
+                  key={index}
+                  href="#"
+                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-300 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
+                >
+                  <Icon fontSize="small" />
+                </a>
+              ))}
+            </div>
+            <p className="mt-5 text-sm leading-7 text-slate-400">
+              New Delhi, India
+              <br />
+              support@eccomerce.com
+              <br />
+              +91 111 111 1111
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4 border-t border-white/10 pt-6 text-xs uppercase tracking-[0.18em] text-slate-500 md:flex-row md:items-center md:justify-between">
+          <p>2026 Eccomerce. All rights reserved.</p>
+          <p>Curated interface. Student showcase build.</p>
         </div>
       </div>
     </footer>

@@ -10,13 +10,12 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import { IconButton, Typography } from '@mui/material';
-import { Jaro, Lilita_One } from 'next/font/google';
 import { Menu } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { resetAuthCookies } from '../lib/actions';
 
-const jaro = Jaro({ weight: '400', subsets: ['latin'] });
-const lilita_One = Lilita_One({ weight: '400', subsets: ['latin'] });
+const headingFontClass = 'font-semibold';
+const itemFontClass = 'font-medium';
 
 type Anchor = 'top' | 'left' | 'bottom' | 'right';
 
@@ -85,11 +84,11 @@ export default function SwipeableTemporaryDrawer(props: props) {
       onKeyDown={toggleDrawer(anchor, false)}
     >
       <List>
-        <Typography textAlign={'center'} color='brown' fontSize={20} className={jaro.className}>OverView</Typography>
+        <Typography textAlign={'center'} color='brown' fontSize={20} className={headingFontClass}>OverView</Typography>
         {['products', 'category', 'Contact Us'].map((text, index) => (
           <ListItem key={text} disablePadding>
             <ListItemButton onClick={() => { navigateTo(text); }}>
-              <ListItemText className={lilita_One.className} primary={text} />
+              <ListItemText className={itemFontClass} primary={text} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -98,26 +97,26 @@ export default function SwipeableTemporaryDrawer(props: props) {
       {
         userId ?
           <List>
-            <Typography color='brown' className={jaro.className}>Dashboard</Typography>
+            <Typography color='brown' className={headingFontClass}>Dashboard</Typography>
             {['profile', 'cart','Orders'].map((text, index) => (
               <ListItem key={text} disablePadding>
                 <ListItemButton onClick={() => { navigateTo(text); }}>
-                  <ListItemText className={lilita_One.className} primary={text} />
+                  <ListItemText className={itemFontClass} primary={text} />
                 </ListItemButton>
               </ListItem>
             ))}
             <ListItem key={'logout'} disablePadding>
-              <ListItemButton onClick={submitLogout} className={lilita_One.className}>
-                <ListItemText className={lilita_One.className} primary={'logout'} />
+              <ListItemButton onClick={submitLogout} className={itemFontClass}>
+                <ListItemText className={itemFontClass} primary={'logout'} />
               </ListItemButton>
             </ListItem>
           </List> :
           <List>
-            <Typography textAlign={'center'} color='brown' fontSize={20} className={jaro.className}>Authentication</Typography>
+            <Typography textAlign={'center'} color='brown' fontSize={20} className={headingFontClass}>Authentication</Typography>
             {['signin', 'signup'].map((text, index) => (
               <ListItem key={text} disablePadding>
-                <ListItemButton onClick={() => { navigateTo(text); }} className={lilita_One.className}>
-                  <ListItemText className={lilita_One.className} primary={text} />
+                <ListItemButton onClick={() => { navigateTo(text); }} className={itemFontClass}>
+                  <ListItemText className={itemFontClass} primary={text} />
                 </ListItemButton>
               </ListItem>
             ))}
