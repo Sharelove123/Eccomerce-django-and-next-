@@ -1,9 +1,10 @@
-'use client'
+'use client';
+
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { handleLogin } from '../lib/actions';
-import apiService from '../services/apiService';
 import Link from 'next/link';
+import { handleLogin } from '../lib/actions';
+import publicApiService from '../services/publicApiService';
 
 const SignUp = () => {
     const router = useRouter();
@@ -19,55 +20,77 @@ const SignUp = () => {
         setLoading(true);
 
         if (password1 !== password2) {
-            setErrors(["Passwords do not match"]);
+            setErrors(['Passwords do not match']);
             setLoading(false);
             return;
         }
 
         try {
             const formData = {
-                email: email,
-                password1: password1,
-                password2: password2
-            }
+                email,
+                password1,
+                password2,
+            };
 
-            const response = await apiService.postWithoutToken('/api/auth/register/', JSON.stringify(formData));
+            const response = await publicApiService.post('/api/auth/register/', JSON.stringify(formData));
 
             if (response.access) {
-                handleLogin(response.user.pk, response.access, response.refresh);
+                const userId = response.user?.pk || response.user?.id;
+
+                if (!userId) {
+                    setErrors(['Registration succeeded but no user id was returned.']);
+                    setLoading(false);
+                    return;
+                }
+
+                await handleLogin(userId, response.access, response.refresh);
                 router.replace('/');
+                router.refresh();
             } else {
                 const tmpErrors: string[] = Object.entries(response).map(([key, val]) => {
-                    if (Array.isArray(val)) return `${key}: ${val.join(', ')}`;
+                    if (Array.isArray(val)) {
+                        return `${key}: ${val.join(', ')}`;
+                    }
+
                     return `${key}: ${val}`;
                 });
-                setErrors(tmpErrors.length > 0 ? tmpErrors : ["Registration failed. Please try again."]);
+
+                setErrors(tmpErrors.length > 0 ? tmpErrors : ['Registration failed. Please try again.']);
             }
         } catch (error) {
-            setErrors(["Network error. The server may be starting up — please try again in a moment."]);
+            const tmpErrors = Array.isArray((error as { non_field_errors?: string[] }).non_field_errors)
+                ? (error as { non_field_errors: string[] }).non_field_errors
+                : Object.entries((error as Record<string, unknown>) || {}).map(([key, val]) => {
+                    if (Array.isArray(val)) {
+                        return `${key}: ${val.join(', ')}`;
+                    }
+
+                    return `${key}: ${String(val)}`;
+                });
+
+            setErrors(tmpErrors.length > 0 ? tmpErrors : ['Network error. The server may be starting up - please try again in a moment.']);
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     return (
-        <div className="flex min-h-screen flex-col justify-center px-6 py-12 lg:px-8 bg-background relative overflow-hidden">
-            {/* Background Blobs */}
-            <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/20 blur-[100px] pointer-events-none" />
+        <div className="relative flex min-h-screen flex-col justify-center overflow-hidden px-6 py-12 lg:px-8">
+            <div className="absolute top-[-10%] right-[-10%] h-[40%] w-[40%] rounded-full bg-[rgba(184,131,71,0.16)] blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-[-10%] left-[-10%] h-[40%] w-[40%] rounded-full bg-[rgba(99,124,147,0.14)] blur-[100px] pointer-events-none" />
 
             <div className="sm:mx-auto sm:w-full sm:max-w-sm relative z-10">
                 <div className="text-center mb-10">
-                    <span className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    <span className="text-3xl font-semibold tracking-[0.2em] gold-accent">
                         ECCOMERCE
                     </span>
-                    <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-foreground">
+                    <h2 className="mt-6 text-center text-4xl font-semibold leading-tight text-foreground">
                         Create your account
                     </h2>
-                    <p className="mt-2 text-sm text-muted-foreground">Join us and start shopping</p>
+                    <p className="mt-3 text-sm text-muted-foreground">Create a customer account and move through checkout, orders, and chats with ease.</p>
                 </div>
 
-                <div className="bg-card/50 backdrop-blur-xl border border-white/20 shadow-xl rounded-2xl p-8">
+                <div className="premium-panel rounded-[2rem] p-8">
                     <form className="space-y-6" onSubmit={submitSignup}>
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium leading-6 text-foreground">Email address</label>
@@ -80,7 +103,7 @@ const SignUp = () => {
                                     autoComplete="email"
                                     required
                                     placeholder="you@example.com"
-                                    className="block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 py-2.5 px-3 text-black dark:text-white shadow-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm sm:leading-6 transition-all"
+                                    className="premium-input block w-full rounded-2xl py-3 px-4 text-black placeholder:text-slate-400 sm:text-sm sm:leading-6"
                                 />
                             </div>
                         </div>
@@ -95,8 +118,8 @@ const SignUp = () => {
                                     id="password"
                                     autoComplete="new-password"
                                     required
-                                    placeholder="••••••••"
-                                    className="block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 py-2.5 px-3 text-black dark:text-white shadow-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm sm:leading-6 transition-all"
+                                    placeholder="********"
+                                    className="premium-input block w-full rounded-2xl py-3 px-4 text-black placeholder:text-slate-400 sm:text-sm sm:leading-6"
                                 />
                             </div>
                         </div>
@@ -111,16 +134,16 @@ const SignUp = () => {
                                     id="password2"
                                     autoComplete="new-password"
                                     required
-                                    placeholder="••••••••"
-                                    className="block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 py-2.5 px-3 text-black dark:text-white shadow-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm sm:leading-6 transition-all"
+                                    placeholder="********"
+                                    className="premium-input block w-full rounded-2xl py-3 px-4 text-black placeholder:text-slate-400 sm:text-sm sm:leading-6"
                                 />
                             </div>
                         </div>
 
                         {errors.length > 0 && (
                             <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
-                                {errors.map((error, index) => (
-                                    <p key={index}>{error}</p>
+                                {errors.map((errorMessage, index) => (
+                                    <p key={index}>{errorMessage}</p>
                                 ))}
                             </div>
                         )}
@@ -129,23 +152,23 @@ const SignUp = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="flex w-full justify-center rounded-lg bg-primary px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-lg shadow-primary/25 hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                                className="premium-button flex w-full justify-center rounded-full px-4 py-3 text-sm font-semibold leading-6 disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                {loading ? "Signing up..." : "Sign up"}
+                                {loading ? 'Signing up...' : 'Sign up'}
                             </button>
                         </div>
                     </form>
 
                     <p className="mt-10 text-center text-sm text-muted-foreground">
                         Already have an account?{' '}
-                        <button onClick={() => router.push('/signin')} className="font-semibold leading-6 text-primary hover:text-primary/80 transition-colors">
+                        <Link href="/signin" className="font-semibold leading-6 text-primary hover:text-primary/80 transition-colors">
                             Sign In
-                        </button>
+                        </Link>
                     </p>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default SignUp;
