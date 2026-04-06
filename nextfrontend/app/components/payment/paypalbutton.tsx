@@ -4,12 +4,15 @@ import { PayPalButtons, PayPalScriptProvider } from '@paypal/react-paypal-js';
 interface PayPalButtonProps {
   totalPrice: number;
   onSuccess: (details: any) => void;
+  disabled?: boolean;
 }
 
-const PayPalButton: React.FC<PayPalButtonProps> = ({ totalPrice, onSuccess }) => {
+const PayPalButton: React.FC<PayPalButtonProps> = ({ totalPrice, onSuccess, disabled = false }) => {
   return (
     <PayPalScriptProvider options={{ clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "" }}>
       <PayPalButtons
+        disabled={disabled}
+        forceReRender={[totalPrice, disabled]}
         createOrder={(data, actions) => {
           if (!actions || !actions.order) {
             return Promise.reject(new Error('Order creation failed.'));

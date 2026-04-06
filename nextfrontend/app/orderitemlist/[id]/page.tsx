@@ -5,7 +5,6 @@ import apiService from '@/app/services/apiService';
 import { useParams, useRouter } from 'next/navigation';
 import { OrderItemList } from '@/app/utils/types';
 import Link from 'next/link';
-import Image from 'next/image';
 
 function OrderItemListPage() {
     const { id } = useParams();
@@ -57,9 +56,7 @@ function OrderItemListPage() {
         );
     }
 
-    // Calculate total from items if needed, or just display them
     const totalItems = orderItemList.reduce((acc, item) => acc + Number(item.quantity), 0);
-    const orderTotal = orderItemList.reduce((acc, item) => acc + (Number(item.total_price) || 0), 0);
 
     return (
         <div className="min-h-screen bg-background pt-24 pb-12">
@@ -99,8 +96,30 @@ function OrderItemListPage() {
                                         <h3 className="font-semibold text-foreground text-lg mb-1">{item.product.title}</h3>
                                         <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
                                             <span className="bg-muted px-2 py-0.5 rounded text-xs font-medium">Qty: {item.quantity.toString()}</span>
-                                            {/* Add more details if available */}
+                                            {item.vendor_name && (
+                                                <span className="bg-muted px-2 py-0.5 rounded text-xs font-medium">Vendor: {item.vendor_name}</span>
+                                            )}
                                         </div>
+                                        {(item.vendor_id || item.vendor_slug) && (
+                                            <div className="mt-3 flex flex-wrap gap-2">
+                                                {item.vendor_slug && (
+                                                    <Link
+                                                        href={`/store/${item.vendor_slug}`}
+                                                        className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-muted/40"
+                                                    >
+                                                        View Store
+                                                    </Link>
+                                                )}
+                                                {item.vendor_id && (
+                                                    <Link
+                                                        href={`/messages?vendor=${item.vendor_id}&product=${item.product.id}`}
+                                                        className="rounded-full bg-foreground px-3 py-1 text-xs font-semibold text-background transition hover:opacity-90"
+                                                    >
+                                                        Message Vendor
+                                                    </Link>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="text-right flex-shrink-0 mt-2 sm:mt-0 w-full sm:w-auto flex justify-between sm:block">
                                         <span className="sm:hidden text-muted-foreground">Price</span>
