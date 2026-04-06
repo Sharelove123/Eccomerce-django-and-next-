@@ -2,10 +2,9 @@
 
 import { CartItem } from '@/app/utils/types';
 import React, { useEffect } from 'react';
-import { Bungee, Lilita_One, JetBrains_Mono } from "next/font/google";
 
-const lilita_One = Lilita_One({ weight: '400', subsets: ['latin'] });
-const mono = JetBrains_Mono({ subsets: ['latin'] });
+const displayFontClass = 'font-black tracking-tight';
+const monoClass = 'font-mono';
 
 interface cartItemProps {
     cartItem: CartItem;
@@ -62,7 +61,7 @@ const ProductCard: React.FC<cartItemProps> = ({ cartItem, removeFromCart, update
                             {cartItem.product.category?.name || 'Item'}
                         </span>
                     </div>
-                    <h3 className={`${lilita_One.className} text-xl md:text-2xl text-black uppercase tracking-tight leading-none`}>
+                    <h3 className={`${displayFontClass} text-xl md:text-2xl text-black uppercase tracking-tight leading-none`}>
                         {cartItem.product.title}
                     </h3>
                 </div>
@@ -84,7 +83,7 @@ const ProductCard: React.FC<cartItemProps> = ({ cartItem, removeFromCart, update
                         </button>
 
                         <div className="w-12 h-10 flex items-center justify-center bg-white">
-                            <span className={`text-lg font-black text-black ${mono.className}`}>
+                            <span className={`text-lg font-black text-black ${monoClass}`}>
                                 {productQuantity}
                             </span>
                         </div>
@@ -102,9 +101,9 @@ const ProductCard: React.FC<cartItemProps> = ({ cartItem, removeFromCart, update
 
                     {/* Price Info */}
                     <div className="flex flex-col items-end">
-                        <p className={`text-xs text-gray-500 uppercase tracking-widest ${mono.className}`}>Total Price</p>
+                        <p className={`text-xs text-gray-500 uppercase tracking-widest ${monoClass}`}>Total Price</p>
                         <div className="flex items-baseline gap-2">
-                            <span className={`text-3xl font-black text-black ${mono.className}`}>
+                            <span className={`text-3xl font-black text-black ${monoClass}`}>
                                 ${productQuantity * Number(price)}
                             </span>
                             {(cartItem.product.discountedPrice && cartItem.product.discountedPrice !== cartItem.product.orginalPrice) && (

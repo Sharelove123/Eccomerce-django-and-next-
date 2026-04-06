@@ -4,9 +4,8 @@ import { Address } from "@/app/utils/types";
 import { useEffect, useState } from "react";
 import React from "react";
 import SimpleSnackbar from "../snackbar";
-import { JetBrains_Mono } from "next/font/google";
 
-const mono = JetBrains_Mono({ subsets: ['latin'] });
+const monoClass = 'font-mono';
 
 interface AddressChoiceProps {
     onAddressSelect: (id: number) => void;
@@ -190,7 +189,7 @@ const AddressChoice: React.FC<AddressChoiceProps> = ({ onAddressSelect }) => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-grayscale">
                     <div className="bg-white w-full max-w-lg border-2 border-black shadow-[16px_16px_0px_0px_rgba(50,50,50,1)] animate-in fade-in zoom-in-95 duration-200">
                         <div className="p-6 border-b-2 border-black flex justify-between items-center bg-gray-50">
-                            <h2 className={`text-2xl font-black uppercase tracking-tight ${mono.className}`}>New Entry</h2>
+                            <h2 className={`text-2xl font-black uppercase tracking-tight ${monoClass}`}>New Entry</h2>
                             <button
                                 onClick={() => setIsModalOpen(false)}
                                 className="text-black hover:bg-black hover:text-white border border-black w-8 h-8 flex items-center justify-center font-bold"
