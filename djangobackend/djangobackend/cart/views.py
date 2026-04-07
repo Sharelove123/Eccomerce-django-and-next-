@@ -43,6 +43,7 @@ class CreateOrderView(APIView):
     def post(self, request, *args, **kwargs):
         order_items = request.data.get('order_items', [])
         address_id = request.data.get('address')
+        payment_method = request.data.get('payment_method', 'ONLINE')
         
         if not order_items:
             return Response({'status': 'failed', 'message': 'Inventory list (order_items) is required.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -52,10 +53,11 @@ class CreateOrderView(APIView):
 
         try:
             # Create the main order
+            is_paid = False if payment_method == 'COD' else True
             order_data = {
                 'user': request.user.id,
                 'address': address_id,
-                'paid': True,
+                'paid': is_paid,
                 'status': 'PENDING',
             }
             order_serializer = self.serializers(data=order_data)

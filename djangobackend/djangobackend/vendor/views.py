@@ -35,7 +35,7 @@ class VendorRegisterView(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save()
+        serializer.save(is_approved=True)
 
     def create(self, request, *args, **kwargs):
         if hasattr(request.user, 'vendor_profile'):
@@ -49,7 +49,7 @@ class VendorRegisterView(CreateAPIView):
         return Response(
             {
                 'status': 'success',
-                'message': 'Vendor account created! Pending admin approval.',
+                'message': 'Vendor account created and automatically approved!',
                 'vendor': serializer.data,
             },
             status=status.HTTP_201_CREATED
