@@ -9,7 +9,11 @@ import {
     Forum,
     Storefront,
     Logout,
+    Edit,
+    Close,
+    FileUpload,
 } from '@mui/icons-material';
+
 
 import { handleLogout } from '@/app/lib/actions';
 import apiService from '@/app/services/apiService';
@@ -17,7 +21,50 @@ import { VendorStatus } from '@/app/utils/types';
 
 const ProfilePage = () => {
     const router = useRouter();
-    const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+    const [user, setUser] = useState<{ id?: string, name: string; email: string; avatar_url?: string } | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editName, setEditName] = useState('');
+    const [editAvatar, setEditAvatar] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [editLoading, setEditLoading] = useState(false);
+
+    const submitProfileUpdate = async () => {
+        setEditLoading(true);
+        try {
+            const formData = new FormData();
+            formData.append('name', editName);
+            if (editAvatar) {
+                formData.append('avatar', editAvatar);
+            }
+            
+            const getCookie = (name: string) => {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop()?.split(';').shift();
+                return null;
+            };
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST || 'http://localhost:8000'}/api/auth/profile/update/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${getCookie('session_access_token')}`,
+                },
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    setUser(data.user);
+                    setIsEditing(false);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setEditLoading(false);
+        }
+    };
     const [vendorStatus, setVendorStatus] = useState<VendorStatus | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -32,6 +79,7 @@ const ProfilePage = () => {
                 }
 
                 setUser(userResponse);
+                setEditName(userResponse.name || '');
 
                 const vendorResponse = await apiService.get('/api/vendor/status/');
                 if (vendorResponse && typeof vendorResponse.is_vendor === 'boolean') {
@@ -106,14 +154,23 @@ const ProfilePage = () => {
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.16),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(214,189,153,0.22),transparent_34%)]" />
                         <div className="relative flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
                             <div className="flex items-center gap-5">
-                                <div className="flex h-24 w-24 items-center justify-center rounded-[2rem] border border-white/15 bg-white/10 text-4xl font-semibold text-white">
-                                    {(user?.name || user?.email || 'U').slice(0, 1).toUpperCase()}
+                                <div className="flex h-24 w-24 overflow-hidden items-center justify-center rounded-[2rem] border border-white/15 bg-white/10 text-4xl font-semibold text-white">
+                                    {user?.avatar_url ? (
+                                        <img src={user.avatar_url} alt="Avatar" className="h-full w-full object-cover" />
+                                    ) : (
+                                        (user?.name || user?.email || 'U').slice(0, 1).toUpperCase()
+                                    )}
                                 </div>
                                 <div>
                                     <p className="eyebrow text-white/60">Account</p>
-                                    <h1 className="mt-2 text-4xl font-semibold leading-tight md:text-5xl">
-                                        {user?.name || 'Welcome back'}
-                                    </h1>
+                                    <div className="flex items-center gap-3">
+                                        <h1 className="mt-2 text-4xl font-semibold leading-tight md:text-5xl">
+                                            {user?.name || 'Welcome back'}
+                                        </h1>
+                                        <button onClick={() => setIsEditing(true)} className="mt-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20">
+                                            <Edit fontSize="small" />
+                                        </button>
+                                    </div>
                                     <p className="mt-3 text-sm text-white/70">{user?.email}</p>
                                 </div>
                             </div>
@@ -181,6 +238,69 @@ const ProfilePage = () => {
                     </div>
                 </section>
             </div>
+
+            {isEditing && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+                    <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-2xl font-semibold text-slate-900">Edit Profile</h2>
+                            <button onClick={() => setIsEditing(false)} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+                                <Close />
+                            </button>
+                        </div>
+                        
+                        <div className="mt-6 flex flex-col items-center gap-4">
+                            <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-4 border-slate-100 bg-slate-50">
+                                {previewUrl || user?.avatar_url ? (
+                                    <img src={previewUrl || user?.avatar_url} alt="Preview" className="h-full w-full object-cover" />
+                                ) : (
+                                    <span className="text-3xl font-semibold text-slate-300">
+                                        {(editName || user?.email || 'U').slice(0, 1).toUpperCase()}
+                                    </span>
+                                )}
+                                <label className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/40 opacity-0 transition hover:opacity-100">
+                                    <FileUpload className="text-white" />
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        className="hidden" 
+                                        onChange={(e) => {
+                                            if (e.target.files && e.target.files[0]) {
+                                                setEditAvatar(e.target.files[0]);
+                                                setPreviewUrl(URL.createObjectURL(e.target.files[0]));
+                                            }
+                                        }} 
+                                    />
+                                </label>
+                            </div>
+                            <p className="text-xs text-slate-500">Click avatar to upload new</p>
+                        </div>
+
+                        <div className="mt-6 space-y-4">
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-slate-700">Display Name</label>
+                                <input 
+                                    type="text" 
+                                    value={editName}
+                                    onChange={(e) => setEditName(e.target.value)}
+                                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[var(--accent)] focus:bg-white"
+                                    placeholder="Enter your name"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-8">
+                            <button 
+                                onClick={submitProfileUpdate}
+                                disabled={editLoading}
+                                className="w-full rounded-xl bg-[var(--accent)] py-3.5 text-sm font-semibold text-white shadow-lg shadow-[var(--accent)]/30 transition hover:bg-[var(--accent)]/90 disabled:opacity-70"
+                            >
+                                {editLoading ? 'Saving...' : 'Save Changes'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

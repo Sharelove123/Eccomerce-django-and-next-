@@ -14,4 +14,5 @@ urlpatterns = [
     path('user/', UserDetailsView.as_view(), name='rest_user_details'),
     path('token/refresh/', get_refresh_view().as_view(), name='token_refresh'),
     path('<uuid:pk>/', api.landlord_detail, name='api_landlrod_detail'),
+    path('profile/update/', api.update_profile, name='api_update_profile'),
 ]

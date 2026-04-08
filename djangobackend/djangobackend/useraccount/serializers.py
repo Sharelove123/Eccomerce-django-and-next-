@@ -12,3 +12,8 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 class CustomLoginSerializer(LoginSerializer):
     username = None
+
+class UpdateUserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['name', 'avatar']

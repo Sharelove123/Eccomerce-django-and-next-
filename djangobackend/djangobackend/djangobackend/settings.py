@@ -93,6 +93,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 REST_AUTH = {
     "USE_JWT": True,
     "JWT_AUTH_HTTPONLY": False,
+    "USER_DETAILS_SERIALIZER": "useraccount.serializers.UserDetailSerializer",
 }
 
 REST_AUTH_SERIALIZERS = {
