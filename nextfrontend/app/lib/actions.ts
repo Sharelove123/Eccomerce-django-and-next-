@@ -15,7 +15,8 @@ export async function handleRefresh() {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
-        }
+        },
+        credentials: 'include'
     })
         .then(response => response.json())
         .then(async (json) => {
@@ -52,7 +53,7 @@ export async function handleLogin(userId: string, accessToken: string, refreshTo
     });
 
     (await cookies()).set('session_access_token', accessToken, {
-        httpOnly: true,
+        httpOnly: false,
         secure: false,
         maxAge: 60 * 60, // 60 minutes
         path: '/'

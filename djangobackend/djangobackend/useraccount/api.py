@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 from .models import User
 from .serializers import UserDetailSerializer, UpdateUserProfileSerializer
@@ -20,6 +21,7 @@ def landlord_detail(request, pk):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def update_profile(request):
     user = request.user
     
