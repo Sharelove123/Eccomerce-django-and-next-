@@ -27,40 +27,36 @@ const ProfilePage = () => {
     const [editAvatar, setEditAvatar] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [editLoading, setEditLoading] = useState(false);
+    const [editError, setEditError] = useState('');
 
     const submitProfileUpdate = async () => {
         setEditLoading(true);
+        setEditError('');
         try {
             const formData = new FormData();
             formData.append('name', editName);
             if (editAvatar) {
                 formData.append('avatar', editAvatar);
             }
-            
-            const getCookie = (name: string) => {
-                const value = `; ${document.cookie}`;
-                const parts = value.split(`; ${name}=`);
-                if (parts.length === 2) return parts.pop()?.split(';').shift();
-                return null;
-            };
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST || 'http://localhost:8000'}/api/auth/profile/update/`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${getCookie('session_access_token')}`,
-                },
-                body: formData,
-            });
+            const data = await apiService.post('/api/auth/profile/update/', formData);
 
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                    setUser(data.user);
-                    setIsEditing(false);
-                }
+            if (data.success) {
+                setUser((currentUser) => currentUser ? { ...currentUser, ...data.user } : data.user);
+                setEditName(data.user?.name || '');
+                setEditAvatar(null);
+                setPreviewUrl(null);
+                setIsEditing(false);
             }
         } catch (error) {
             console.error(error);
+            if (error instanceof Error) {
+                setEditError(error.message);
+            } else if (error && typeof error === 'object' && 'detail' in error && typeof error.detail === 'string') {
+                setEditError(error.detail);
+            } else {
+                setEditError('Unable to update your profile right now.');
+            }
         } finally {
             setEditLoading(false);
         }
@@ -287,6 +283,9 @@ const ProfilePage = () => {
                                     placeholder="Enter your name"
                                 />
                             </div>
+                            {editError ? (
+                                <p className="text-sm text-red-600">{editError}</p>
+                            ) : null}
                         </div>
 
                         <div className="mt-8">
