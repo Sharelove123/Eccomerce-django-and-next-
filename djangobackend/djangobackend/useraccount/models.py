@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
 from django.db import models
+from urllib.parse import urljoin
 
 
 class CustomUserManager(UserManager):
@@ -49,6 +50,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def avatar_url(self):
         if self.avatar:
-            return f'{settings.WEBSITE_URL}{self.avatar.url}'
+            avatar_url = self.avatar.url
+
+            if avatar_url.startswith(('http://', 'https://')):
+                return avatar_url
+
+            return urljoin(settings.WEBSITE_URL, avatar_url)
         else:
             return ''
