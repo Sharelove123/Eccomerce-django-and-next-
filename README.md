@@ -1,87 +1,79 @@
-# Eccomerce-django-and-next
+# Eccomerce Django + Next
 
-📌 Overview
+## Overview
 
-A full-stack e-commerce application built with Next.js for the frontend, Django REST Framework for the backend, and Material UI (MUI) for responsive and elegant design. It includes PayPal integration, authentication, cart management, and an order system with detailed views.
+This repository contains a multi-part e-commerce platform:
 
+1. A Next.js customer and vendor web frontend
+2. A Django REST backend (auth, products, cart, orders, vendor, chat)
+3. A Flutter mobile app workspace (kept local in this repo setup)
 
----
+The system supports customer shopping flows and vendor storefront management.
 
-✅ Features
+## Repository Structure
 
-Authentication
+- `nextfrontend/`: Next.js app
+- `djangobackend/djangobackend/`: Django project and apps
+- `multivendoreccommerce/`: Flutter app (local workspace)
 
-Register & Login with Email and Password
+## Key Features
 
+- Authentication (register/login)
+- Product browsing and detail pages
+- Cart and checkout flow
+- Order listing and order detail pages
+- Vendor registration and dashboard
+- Vendor profile and product management
+- Customer-vendor chat
+- Responsive UI for desktop and mobile
 
-Product & Categories
+## Tech Stack
 
-Browse products by category
+- Frontend: Next.js, React, TypeScript, Tailwind, Material UI
+- Backend: Django, Django REST Framework
+- Mobile: Flutter (Dart)
+- API Client: Axios/Fetch (web), Dio (Flutter)
+- Payment: PayPal integration (web flow)
 
-Product detail page
+## Local Development
 
+### 1) Backend (Django)
 
-Shopping Cart
+From `djangobackend/djangobackend/`:
 
-Add products to cart
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
 
-Update quantity / remove items
+### 2) Frontend (Next.js)
 
+From `nextfrontend/`:
 
-Address Management
+```bash
+npm install
+npm run dev
+```
 
-Add and edit delivery addresses
+### 3) Flutter App (optional local)
 
+From `multivendoreccommerce/`:
 
-Orders
+```bash
+flutter pub get
+flutter run
+```
 
-Order List Page – View all past orders
+## Environment Notes
 
-Order Detail Page – Check order status and items
+- Configure backend URL for Next.js with `NEXT_PUBLIC_API_HOST`.
+- Configure backend URL for Flutter with `API_BASE_URL` in `multivendoreccommerce/.env`.
 
+## Git Tracking Note
 
-Payment
+In this workspace, `multivendoreccommerce/` is configured to be ignored from Git tracking (local-only workflow).
 
-Pay securely using PayPal
+## Showcase
 
-
-Responsive Design
-
-Works on Desktop & Mobile
-
-
-Modern UI
-
-Built with Material UI (React MUI) for a professional look
-
-
-
-
----
-
-🛠️ Tech Stack
-
-Frontend
-
-Next.js
-
-React + Material UI
-
-
-Axios for API calls
-
-
-Backend
-
-Django
-
-Django REST Framework
-EEX6L1K_Ybc
-PostgreSQL/MySQL
-
-
-Payments
-
-PayPal SDK
-
-link to the short showcase :- [![Watch the video](https://img.youtube.com/vi/EEX6L1K_Ybc/maxresdefault.jpg)](https://youtube.com/shorts/EEX6L1K_Ybc)
+Short demo: [https://youtube.com/shorts/EEX6L1K_Ybc](https://youtube.com/shorts/EEX6L1K_Ybc)
