@@ -11,8 +11,6 @@ class VendorMiniSerializer(serializers.ModelSerializer):
 
 class VendorSerializer(serializers.ModelSerializer):
     """Full vendor detail for storefront."""
-    product_count = serializers.IntegerField(read_only=True)
-    average_rating = serializers.FloatField(read_only=True)
     owner_name = serializers.SerializerMethodField()
 
     def get_owner_name(self, obj):
