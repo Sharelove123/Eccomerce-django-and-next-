@@ -34,23 +34,42 @@ export default function VendorProfilePage() {
 
     useEffect(() => {
         const fetchVendor = async () => {
-            const response = await apiService.get('/api/vendor/me/');
+            setError('');
+            try {
+                const response = await apiService.get('/api/vendor/me/');
 
-            if (response.id) {
-                setVendor(response);
-                setForm({
-                    store_name: response.store_name || '',
-                    store_description: response.store_description || '',
-                    phone: response.phone || '',
-                    address: response.address || '',
-                });
-                setLogoPreview(response.store_logo || '');
-                setBannerPreview(response.store_banner || '');
-            } else if (response.detail) {
+                if (response?.id) {
+                    setVendor(response);
+                    setForm({
+                        store_name: response.store_name || '',
+                        store_description: response.store_description || '',
+                        phone: response.phone || '',
+                        address: response.address || '',
+                    });
+                    setLogoPreview(response.store_logo || '');
+                    setBannerPreview(response.store_banner || '');
+                    return;
+                }
+
+                // Fallback: if full profile endpoint fails, at least verify vendor status.
+                const status = await apiService.get('/api/vendor/status/');
+                if (status?.is_vendor) {
+                    setForm((current) => ({
+                        ...current,
+                        store_name: status.store_name || current.store_name,
+                    }));
+                    setError('Profile endpoint is temporarily unavailable (500). You can still edit basic fields and try saving.');
+                    return;
+                }
+
                 router.push('/vendor/register');
+            } catch (err: any) {
+                const detail = err?.detail || err?.message || 'Failed to load vendor profile.';
+                setError(typeof detail === 'string' ? detail : 'Failed to load vendor profile.');
+                console.error('[VendorProfilePage] fetchVendor failed', err);
+            } finally {
+                setLoading(false);
             }
-
-            setLoading(false);
         };
 
         fetchVendor();
@@ -96,16 +115,22 @@ export default function VendorProfilePage() {
             payload.append('store_banner', bannerFile);
         }
 
-        const response = await apiService.patch('/api/vendor/me/', payload);
+        try {
+            const response = await apiService.patch('/api/vendor/me/', payload);
 
-        if (response.id) {
-            setVendor(response);
-            setSuccess('Store profile updated.');
-        } else {
-            setError(response.detail || 'Unable to update vendor profile.');
+            if (response?.id) {
+                setVendor(response);
+                setSuccess('Store profile updated.');
+            } else {
+                setError(response?.detail || 'Unable to update vendor profile.');
+            }
+        } catch (err: any) {
+            const detail = err?.detail || err?.message || 'Unable to update vendor profile.';
+            setError(typeof detail === 'string' ? detail : 'Unable to update vendor profile.');
+            console.error('[VendorProfilePage] update failed', err);
+        } finally {
+            setSaving(false);
         }
-
-        setSaving(false);
     };
 
     if (loading) {

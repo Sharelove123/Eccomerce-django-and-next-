@@ -34,6 +34,8 @@ yarn-error.log*
 *.env
 /nextfrontend/.env.local
 /djangobackend/.env.dev
+multivendoreccommerce/
+/multivendoreccommerce/
 # vercel
 .vercel
 

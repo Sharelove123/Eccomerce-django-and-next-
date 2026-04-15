@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.exceptions import PermissionDenied
 
 from django.shortcuts import get_object_or_404
 
@@ -65,7 +66,10 @@ class VendorProfileView(RetrieveUpdateAPIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_object(self):
-        return self.request.user.vendor_profile
+        vendor = getattr(self.request.user, 'vendor_profile', None)
+        if vendor is None:
+            raise PermissionDenied('Vendor profile not found for this account.')
+        return vendor
 
 
 # ─── Dashboard ──────────────────────────────────────────────────
