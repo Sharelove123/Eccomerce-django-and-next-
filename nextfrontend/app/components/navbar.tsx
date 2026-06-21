@@ -89,7 +89,6 @@ export default function PrimarySearchAppBar({ userId }: Props) {
     { name: 'Contact', href: '/contactus' },
   ];
 
-  const messagesHref = vendorStatus?.is_vendor ? '/vendor/chats' : '/messages';
 
   return (
     <nav className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-6">
@@ -165,9 +164,14 @@ export default function PrimarySearchAppBar({ userId }: Props) {
                     <Link href="/profile" className="block rounded-xl px-4 py-3 hover:bg-black/[0.04]">Profile</Link>
                     <Link href="/cart" className="block rounded-xl px-4 py-3 hover:bg-black/[0.04]">Cart</Link>
                     <Link href="/orderList" className="block rounded-xl px-4 py-3 hover:bg-black/[0.04]">Orders</Link>
-                    <Link href={messagesHref} className="block rounded-xl px-4 py-3 hover:bg-black/[0.04]">
-                      {vendorStatus?.is_vendor ? 'Vendor Chats' : 'Messages'}
-                    </Link>
+                    {vendorStatus?.is_vendor ? (
+                      <>
+                        <Link href="/vendor/chats" className="block rounded-xl px-4 py-3 hover:bg-black/[0.04]">Vendor Chats</Link>
+                        <Link href="/messages" className="block rounded-xl px-4 py-3 hover:bg-black/[0.04]">My Messages</Link>
+                      </>
+                    ) : (
+                      <Link href="/messages" className="block rounded-xl px-4 py-3 hover:bg-black/[0.04]">Messages</Link>
+                    )}
                     <Link
                       href={vendorStatus?.is_vendor ? '/vendor/dashboard' : '/vendor/register'}
                       className="block rounded-xl px-4 py-3 hover:bg-black/[0.04]"
@@ -252,9 +256,20 @@ export default function PrimarySearchAppBar({ userId }: Props) {
                 <Link href="/orderList" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 hover:bg-black/[0.04]">
                   <ShoppingBag fontSize="small" /> <span>Orders</span>
                 </Link>
-                <Link href={messagesHref} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 hover:bg-black/[0.04]">
-                  <Forum fontSize="small" /> <span>{vendorStatus?.is_vendor ? 'Vendor Chats' : 'Messages'}</span>
-                </Link>
+                {vendorStatus?.is_vendor ? (
+                  <>
+                    <Link href="/vendor/chats" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 hover:bg-black/[0.04]">
+                      <Forum fontSize="small" /> <span>Vendor Chats</span>
+                    </Link>
+                    <Link href="/messages" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 hover:bg-black/[0.04]">
+                      <Forum fontSize="small" /> <span>My Messages</span>
+                    </Link>
+                  </>
+                ) : (
+                  <Link href="/messages" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 hover:bg-black/[0.04]">
+                    <Forum fontSize="small" /> <span>Messages</span>
+                  </Link>
+                )}
                 <Link
                   href={vendorStatus?.is_vendor ? '/vendor/dashboard' : '/vendor/register'}
                   onClick={() => setMobileMenuOpen(false)}

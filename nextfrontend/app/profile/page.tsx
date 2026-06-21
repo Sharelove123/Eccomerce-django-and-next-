@@ -122,15 +122,33 @@ const ProfilePage = () => {
             icon: <ShoppingBag fontSize="small" />,
             tone: 'bg-[rgba(104,130,84,0.12)] text-emerald-700',
         },
-        {
-            href: vendorStatus?.is_vendor ? '/vendor/chats' : '/messages',
-            title: vendorStatus?.is_vendor ? 'Vendor Chats' : 'Messages',
-            description: vendorStatus?.is_vendor
-                ? 'Reply to customer conversations from your storefront.'
-                : 'Talk to sellers about products and support.',
-            icon: <Forum fontSize="small" />,
-            tone: 'bg-[rgba(125,96,176,0.12)] text-violet-700',
-        },
+        ...(vendorStatus?.is_vendor
+            ? [
+                {
+                    href: '/vendor/chats',
+                    title: 'Vendor Chats',
+                    description: 'Reply to customer conversations from your storefront.',
+                    icon: <Forum fontSize="small" />,
+                    tone: 'bg-[rgba(125,96,176,0.12)] text-violet-700',
+                },
+                {
+                    href: '/messages',
+                    title: 'My Messages',
+                    description: 'View your conversations with other vendors as a buyer.',
+                    icon: <Forum fontSize="small" />,
+                    tone: 'bg-[rgba(59,130,246,0.12)] text-blue-700',
+                },
+              ]
+            : [
+                {
+                    href: '/messages',
+                    title: 'Messages',
+                    description: 'Talk to sellers about products and support.',
+                    icon: <Forum fontSize="small" />,
+                    tone: 'bg-[rgba(125,96,176,0.12)] text-violet-700',
+                },
+              ]
+        ),
         {
             href: vendorStatus?.is_vendor ? '/vendor/dashboard' : '/vendor/register',
             title: vendorStatus?.is_vendor ? 'Vendor Dashboard' : 'Become a Seller',
